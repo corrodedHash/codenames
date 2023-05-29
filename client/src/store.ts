@@ -5,6 +5,8 @@ import { CardStateString } from "./util";
 const wordsURL = new URL("/words.txt", import.meta.url).href;
 const colorsURL = new URL("/colors.txt", import.meta.url).href;
 
+const APIRoot = "/api/";
+
 export const useWordStore = defineStore("words", {
   state: () => ({
     words: [] as string[],
@@ -37,4 +39,15 @@ export const useOptionStore = defineStore("options", {
   }),
 });
 
-console.log(import.meta.env.BASE_URL);
+export const useAPIStore = defineStore("api", {
+  state: () => ({
+    rooms: [] as { sessionkey: string; created: number }[],
+    adminkeys: {} as Record<string, string>,
+  }),
+  actions: {
+    async pollRooms() {
+      const rooms = await fetch(APIRoot + "list").then((x) => x.json());
+      this.rooms = rooms;
+    },
+  },
+});

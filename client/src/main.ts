@@ -1,7 +1,8 @@
 import { createApp } from "vue";
 import "./style.css";
-import Display from "./views/Display.vue";
-import WordEntry from "./views/WordEntry.vue";
+import GameView from "./views/GameView.vue";
+import RoomCreation from "./views/RoomCreation.vue";
+import RoomList from "./views/RoomList.vue";
 import App from "./App.vue";
 import { createRouter, createWebHashHistory } from "vue-router";
 
@@ -14,8 +15,9 @@ const pinia = createPinia();
 // Each route should map to a component.
 // We'll talk about nested routes later.
 const routes = [
-  { path: "/", component: WordEntry },
-  { path: "/play", component: Display },
+  { path: "/", component: RoomCreation },
+  { path: "/play", component: GameView },
+  { path: "/rooms", component: RoomList },
 ];
 
 // 3. Create the router instance and pass the `routes` option
