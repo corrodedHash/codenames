@@ -43,6 +43,7 @@ const stateClassName = computed(() => {
       return "stateBlack";
   }
 });
+
 function handleClick() {
   if (optionStore.leaderMode) {
     strikedThrough.value = !strikedThrough.value;

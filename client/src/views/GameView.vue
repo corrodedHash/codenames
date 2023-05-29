@@ -2,8 +2,8 @@
 import Wordcell from "../components/Wordcell.vue";
 import { useWordStore } from "../store";
 
+// const props = defineProps<{ words: string[]; colors: string[] }>();
 const wordStore = useWordStore();
-
 </script>
 
 <template>
