@@ -1,25 +1,18 @@
 <template>
-  <div>
-    <div>
-      Vertical:
+  <div class="contentBox">
+    <div class="optionsBox">
       <input type="checkbox" v-model="optionStore.showVertical" />
-    </div>
-    <div>
-      Horizontal:
+      <span> Vertical: </span>
       <input type="checkbox" v-model="optionStore.showMirrored" />
-    </div>
-    <div>
-      Leader mode:
+      <span> Horizontal: </span>
       <input type="checkbox" v-model="optionStore.leaderMode" />
-    </div>
-    <div>
-      Revealer mode:
+      <span> Leader Mode: </span>
       <input type="checkbox" v-model="optionStore.revealer" />
+      <span> Revealer Mode: </span>
     </div>
-    <br />
-    <router-link to="/play">Start</router-link>
+    <router-link to="/play" class="startButton">Start</router-link>
+    <textarea v-model="formattedWords"></textarea>
   </div>
-  <textarea v-model="formattedWords"></textarea>
 </template>
 <script setup lang="ts">
 import { computed } from "vue";
@@ -35,3 +28,20 @@ const formattedWords = computed({
   },
 });
 </script>
+
+<style scoped>
+.startButton {
+  margin: 2em;
+}
+.optionsBox {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+.contentBox {
+  margin: 1em;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+</style>
