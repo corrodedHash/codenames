@@ -3,6 +3,7 @@ import Wordcell from "../components/Wordcell.vue";
 import { useWordStore } from "../store";
 
 const wordStore = useWordStore();
+
 </script>
 
 <template>

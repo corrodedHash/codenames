@@ -1,10 +1,15 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import { useOptionStore } from "../store";
-import { CellState, nextState, stateNameToState } from "../util";
+import {
+  CardStateString,
+  CellState,
+  nextState,
+  stateNameToState,
+} from "../util";
 const props = defineProps<{
   word: string;
-  color: "red" | "blue" | "neutral" | "black";
+  color: CardStateString;
 }>();
 
 const state = ref(CellState.None);
@@ -55,6 +60,7 @@ function handleClick() {
       strikedThrough: strikedThrough,
     }"
     @click="handleClick"
+    tabindex="0"
   >
     <span class="wordEntry noselect topWord" v-if="optionStore.showMirrored">
       {{ props.word }}
@@ -104,10 +110,10 @@ function handleClick() {
 }
 
 .wordBoxInternal.stateRed {
-  background-color: red;
+  background-color: hsl(0, 100%, 70%);
 }
 .wordBoxInternal.stateBlue {
-  background-color: blue;
+  background-color: hsl(240, 100%, 70%);
 }
 .wordBoxInternal.stateNeutral {
   background-color: rgb(190, 190, 159);
