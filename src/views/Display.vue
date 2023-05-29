@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import Wordcell from "../components/Wordcell.vue";
-import { useOptionStore, useWordStore } from "../store";
+import { useWordStore } from "../store";
 
 const wordStore = useWordStore();
-const optionStore = useOptionStore();
 </script>
 
 <template>
@@ -12,11 +11,7 @@ const optionStore = useOptionStore();
       class="wordCell"
       v-for="cellIndex in 25"
       :word="wordStore.words[cellIndex - 1] || '?'"
-      :color="
-        optionStore.leaderMode
-          ? wordStore.colors[cellIndex - 1] || 'black'
-          : undefined
-      "
+      :color="wordStore.colors[cellIndex - 1] || 'black'"
       :key="cellIndex"
     />
   </div>

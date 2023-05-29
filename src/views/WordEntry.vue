@@ -1,7 +1,21 @@
 <template>
   <div>
-    <input type="checkbox" v-model="optionStore.showVertical" />
-    <input type="checkbox" v-model="optionStore.leaderMode" />
+    <div>
+      Vertical:
+      <input type="checkbox" v-model="optionStore.showVertical" />
+    </div>
+    <div>
+      Horizontal:
+      <input type="checkbox" v-model="optionStore.showMirrored" />
+    </div>
+    <div>
+      Leader mode:
+      <input type="checkbox" v-model="optionStore.leaderMode" />
+    </div>
+    <div>
+      Revealer mode:
+      <input type="checkbox" v-model="optionStore.revealer" />
+    </div>
     <br />
     <router-link to="/play">Start</router-link>
   </div>

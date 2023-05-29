@@ -29,7 +29,12 @@ export const useWordStore = defineStore("words", {
 });
 
 export const useOptionStore = defineStore("options", {
-  state: () => ({ showVertical: false, leaderMode: false }),
+  state: () => ({
+    showVertical: false,
+    showMirrored: true,
+    leaderMode: false,
+    revealer: false,
+  }),
 });
 
 console.log(import.meta.env.BASE_URL);

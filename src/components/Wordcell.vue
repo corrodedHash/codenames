@@ -1,41 +1,22 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import { useOptionStore } from "../store";
+import { CellState, nextState, stateNameToState } from "../util";
 const props = defineProps<{
   word: string;
-  color?: "red" | "blue" | "neutral" | "black";
+  color: "red" | "blue" | "neutral" | "black";
 }>();
-enum CellState {
-  None,
-  Red,
-  Blue,
-  Neutral,
-  Black,
-}
 
-const optionStore = useOptionStore();
-
-function stateNameToState(stateName: string): CellState {
-  switch (stateName) {
-    case "red":
-      return CellState.Red;
-    case "blue":
-      return CellState.Blue;
-    case "black":
-      return CellState.Black;
-    case "neutral":
-      return CellState.Neutral;
-  }
-  throw Error("Unknown state name" + stateName);
-}
 const state = ref(CellState.None);
 const strikedThrough = ref(false);
 
+const optionStore = useOptionStore();
+
 watch(
-  () => props.color,
-  (c) => {
-    if (c) {
-      state.value = stateNameToState(c);
+  () => optionStore.leaderMode,
+  (m) => {
+    if (m) {
+      state.value = stateNameToState(props.color);
     } else {
       state.value = CellState.None;
     }
@@ -57,27 +38,12 @@ const stateClassName = computed(() => {
       return "stateBlack";
   }
 });
-
-function nextState(state: CellState): CellState {
-  switch (state) {
-    case CellState.None:
-      return CellState.Red;
-    case CellState.Red:
-      return CellState.Blue;
-    case CellState.Blue:
-      return CellState.Neutral;
-    case CellState.Neutral:
-      return CellState.Black;
-    case CellState.Black:
-      return CellState.None;
-  }
-}
-
 function handleClick() {
   if (optionStore.leaderMode) {
     strikedThrough.value = !strikedThrough.value;
   } else {
-    state.value = nextState(state.value);
+    if (optionStore.revealer) state.value = stateNameToState(props.color);
+    else state.value = nextState(state.value);
   }
 }
 </script>
@@ -90,7 +56,7 @@ function handleClick() {
     }"
     @click="handleClick"
   >
-    <span class="wordEntry noselect mainWord">
+    <span class="wordEntry noselect topWord" v-if="optionStore.showMirrored">
       {{ props.word }}
     </span>
     <span class="wordEntry noselect leftWord" v-if="optionStore.showVertical">
@@ -99,7 +65,14 @@ function handleClick() {
     <span class="wordEntry noselect rightWord" v-if="optionStore.showVertical">
       {{ props.word }}
     </span>
-    <span class="wordEntry noselect topWord">
+    <span
+      :class="{
+        wordEntry: true,
+        noselect: true,
+        mainWord: true,
+        singleMode: !optionStore.showMirrored && !optionStore.showVertical,
+      }"
+    >
       {{ props.word }}
     </span>
   </div>
@@ -121,6 +94,8 @@ function handleClick() {
 .wordEntry {
   position: absolute;
   text-align: center;
+
+  font-size: 3vw;
 }
 
 .strikedThrough .wordEntry {
@@ -161,10 +136,13 @@ function handleClick() {
   top: 10%;
 }
 .mainWord {
-  font-size: 150%;
+  font-size: 3vw;
   font-weight: bold;
   left: 0;
   right: 0;
-  bottom: 20%;
+  bottom: 10%;
+}
+.mainWord.singleMode {
+  bottom: 30%;
 }
 </style>
