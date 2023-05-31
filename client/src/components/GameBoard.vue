@@ -1,21 +1,35 @@
 <script setup lang="ts">
-import Wordcell from "../components/Wordcell.vue";
+import WordCell from "../components/WordCell.vue";
+import { useOptionStore } from "../store";
 import { CardStateString } from "../util";
+
+const configStore = useOptionStore();
 
 const props = defineProps<{
   words: string[];
   colors: CardStateString[];
   revealed: boolean[];
 }>();
+
+function cellColor(index: number): CardStateString | undefined {
+  if (props.revealed || configStore.leaderMode) {
+    return props.colors[index];
+  } else {
+    return undefined;
+  }
+}
+
+function handleCellClick(index: number) {}
 </script>
 
 <template>
   <div class="wordBox">
-    <Wordcell
+    <WordCell
       class="wordCell"
       v-for="cellIndex in 25"
+      @click="handleCellClick(cellIndex - 1)"
       :word="props.words[cellIndex - 1] || '?'"
-      :color="props.colors[cellIndex - 1] || 'black'"
+      :color="cellColor(cellIndex - 1)"
       :key="cellIndex"
     />
   </div>

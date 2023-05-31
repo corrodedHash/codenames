@@ -1,66 +1,42 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import { useOptionStore } from "../store";
-import {
-  CardStateString,
-  CellState,
-  nextState,
-  stateNameToState,
-} from "../util";
+import { CardStateString, CellState } from "../util";
 const props = defineProps<{
   word: string;
-  color: CardStateString;
+  color?: CardStateString;
+  strikedThrough?: boolean;
 }>();
 
-const state = ref(CellState.None);
-const strikedThrough = ref(false);
+const emit = defineEmits<{
+  (e: "click"): void;
+}>();
 
 const optionStore = useOptionStore();
 
-watch(
-  () => optionStore.leaderMode,
-  (m) => {
-    if (m) {
-      state.value = stateNameToState(props.color);
-    } else {
-      state.value = CellState.None;
-    }
-  },
-  { immediate: true }
-);
-
 const stateClassName = computed(() => {
-  switch (state.value) {
-    case CellState.None:
+  switch (props.color) {
+    case undefined:
       return "stateNone";
-    case CellState.Red:
+    case "red":
       return "stateRed";
-    case CellState.Blue:
+    case "blue":
       return "stateBlue";
-    case CellState.Neutral:
+    case "neutral":
       return "stateNeutral";
-    case CellState.Black:
+    case "black":
       return "stateBlack";
   }
 });
-
-function handleClick() {
-  if (optionStore.leaderMode) {
-    strikedThrough.value = !strikedThrough.value;
-  } else {
-    if (optionStore.revealer) state.value = stateNameToState(props.color);
-    else state.value = nextState(state.value);
-  }
-}
 </script>
 <template>
   <div
     :class="{
       wordBoxInternal: true,
       [stateClassName]: true,
-      strikedThrough: strikedThrough,
+      strikedThrough: strikedThrough || false,
     }"
-    @click="handleClick"
+    @click="emit('click')"
     tabindex="0"
   >
     <span class="wordEntry noselect topWord" v-if="optionStore.showMirrored">
@@ -86,15 +62,6 @@ function handleClick() {
 </template>
 
 <style scoped>
-.noselect {
-  -webkit-touch-callout: none; /* iOS Safari */
-  -webkit-user-select: none; /* Safari */
-  -khtml-user-select: none; /* Konqueror HTML */
-  -moz-user-select: none; /* Old versions of Firefox */
-  -ms-user-select: none; /* Internet Explorer/Edge */
-  user-select: none; /* Non-prefixed version, currently
-                                  supported by Chrome, Edge, Opera and Firefox */
-}
 .wordBoxInternal {
   position: relative;
 }
