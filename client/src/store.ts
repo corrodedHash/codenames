@@ -11,6 +11,7 @@ export const useWordStore = defineStore("words", {
   state: () => ({
     words: [] as string[],
     colors: [] as CardStateString[],
+    revealed: [] as boolean[],
   }),
 
   actions: {
@@ -20,6 +21,7 @@ export const useWordStore = defineStore("words", {
       const [words, colors] = await Promise.all([wordFetch, colorFetch]);
       this.setWords(words);
       this.setColors(colors);
+      this.revealed = [...this.words.keys()].map(() => false);
     },
     setWords(wordList: string) {
       this.words = wordList.split("\n");
