@@ -10,7 +10,7 @@ const APIRoot = "/api/";
 export const useWordStore = defineStore("words", {
   state: () => ({
     words: [] as string[],
-    colors: [] as CardStateString[],
+    colors: [] as (CardStateString | undefined)[],
     revealed: [] as boolean[],
   }),
 
@@ -27,7 +27,7 @@ export const useWordStore = defineStore("words", {
       this.words = wordList.split("\n");
     },
     setColors(colorList: string) {
-      this.colors = colorList.split("\n") as CardStateString[];
+      this.colors = colorList.split("\n") as (CardStateString | undefined)[];
     },
   },
 });
@@ -36,8 +36,7 @@ export const useOptionStore = defineStore("options", {
   state: () => ({
     showVertical: false,
     showMirrored: true,
-    leaderMode: false,
-    revealer: false,
+    gamemode: "offline" as "leader" | "revealer" | "spectator" | "offline",
   }),
 });
 

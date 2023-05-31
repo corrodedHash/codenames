@@ -5,7 +5,7 @@ const API = useAPIStore();
 API.pollRooms();
 
 function handleClick(sessionkey: string) {
-  console.log(sessionkey)
+  console.log(sessionkey);
 }
 </script>
 <template>

@@ -1,25 +1,26 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import WordCell from "../components/WordCell.vue";
-import { useOptionStore } from "../store";
 import { CardStateString } from "../util";
-
-const configStore = useOptionStore();
 
 const props = defineProps<{
   words: string[];
-  colors: CardStateString[];
+  colors: (CardStateString | undefined)[];
   revealed: boolean[];
+  leaderMode?: boolean;
 }>();
 
+const emit = defineEmits<{ (e: "cellClicked", index: number): void }>();
+
+const leaderMode = computed(() => !!props.leaderMode);
+
 function cellColor(index: number): CardStateString | undefined {
-  if (props.revealed || configStore.leaderMode) {
+  if (props.revealed[index] || leaderMode.value) {
     return props.colors[index];
   } else {
     return undefined;
   }
 }
-
-function handleCellClick(index: number) {}
 </script>
 
 <template>
@@ -27,9 +28,10 @@ function handleCellClick(index: number) {}
     <WordCell
       class="wordCell"
       v-for="cellIndex in 25"
-      @click="handleCellClick(cellIndex - 1)"
+      @click="emit('cellClicked', cellIndex - 1)"
       :word="props.words[cellIndex - 1] || '?'"
       :color="cellColor(cellIndex - 1)"
+      :striked-through="leaderMode && revealed[cellIndex - 1]"
       :key="cellIndex"
     />
   </div>

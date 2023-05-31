@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed } from "vue";
 import { useOptionStore } from "../store";
-import { CardStateString, CellState } from "../util";
+import { CardStateString } from "../util";
 const props = defineProps<{
   word: string;
   color?: CardStateString;
@@ -15,18 +15,14 @@ const emit = defineEmits<{
 const optionStore = useOptionStore();
 
 const stateClassName = computed(() => {
-  switch (props.color) {
-    case undefined:
-      return "stateNone";
-    case "red":
-      return "stateRed";
-    case "blue":
-      return "stateBlue";
-    case "neutral":
-      return "stateNeutral";
-    case "black":
-      return "stateBlack";
-  }
+  const cssMap = {
+    none: "stateNone",
+    red: "stateRed",
+    blue: "stateBlue",
+    neutral: "stateNeutral",
+    black: "stateBlack",
+  } as const;
+  return cssMap[props.color || "none"];
 });
 </script>
 <template>
