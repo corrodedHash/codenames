@@ -1,24 +1,16 @@
-<template>
-  <div class="contentBox">
-    <div class="optionsBox">
-      <select v-model="optionStore.gamemode">
-        <option disabled value="">Please select one</option>
-        <option value="leader">Leader</option>
-        <option value="revealer">Revealer</option>
-        <option value="spectator">Spectator</option>
-        <option value="offline">Offline</option>
-      </select>
-    </div>
-    <router-link to="/play" class="startButton">Start</router-link>
-    <textarea v-model="formattedWords"></textarea>
-  </div>
-</template>
 <script setup lang="ts">
-import { computed } from "vue";
-import { useOptionStore, useWordStore } from "../store";
+import { computed, ref } from "vue";
+import { useWordStore } from "../store";
+import { useRouter } from "vue-router";
 
 const wordStore = useWordStore();
-const optionStore = useOptionStore();
+
+const colorSeed = ref(42);
+const router = useRouter();
+
+const canStart = computed(
+  () => wordStore.words.length >= 25 && colorSeed.value > 0
+);
 
 const formattedWords = computed({
   get() {
@@ -28,8 +20,24 @@ const formattedWords = computed({
     wordStore.words = newValue.split("\n");
   },
 });
-</script>
 
+function startGame() {
+  router.push("/play");
+}
+</script>
+<template>
+  <div class="contentBox">
+    <textarea v-model="formattedWords"></textarea>
+    <input type="text" v-model.number="colorSeed" />
+    <!-- <router-link to="/play" class="startButton">Start</router-link> -->
+    <input
+      type="button"
+      value="Start"
+      @click="startGame"
+      :disabled="!canStart"
+    />
+  </div>
+</template>
 <style scoped>
 .startButton {
   margin: 2em;

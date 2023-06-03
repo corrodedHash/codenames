@@ -26,7 +26,7 @@ async function init() {
   initColors = colors.split("\n") as (CardStateString | undefined)[];
 }
 onMounted(async () => {
-  init();
+  await init();
   handleOffline();
 });
 
