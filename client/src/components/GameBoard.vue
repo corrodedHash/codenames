@@ -42,8 +42,8 @@ function cellColor(index: number): CardStateString | undefined {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   grid-template-rows: repeat(5, 1fr);
-  height: 100vh;
-  width: 100vw;
+  height: 100%;
+  width: 100%;
 }
 
 .wordCell {

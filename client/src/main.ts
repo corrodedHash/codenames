@@ -7,7 +7,6 @@ import App from "./App.vue";
 import { createRouter, createWebHashHistory } from "vue-router";
 
 import { createPinia } from "pinia";
-import { useWordStore } from "./store";
 
 const pinia = createPinia();
 
@@ -15,9 +14,9 @@ const pinia = createPinia();
 // Each route should map to a component.
 // We'll talk about nested routes later.
 const routes = [
-  { path: "/", component: RoomCreation },
+  { path: "/create", component: RoomCreation },
   { path: "/play", component: GameView },
-  { path: "/rooms", component: RoomList },
+  { path: "/", component: RoomList },
 ];
 
 // 3. Create the router instance and pass the `routes` option
@@ -30,6 +29,3 @@ const router = createRouter({
 });
 
 createApp(App).use(pinia).use(router).mount("#app");
-
-const wordStore = useWordStore();
-wordStore.init();

@@ -1,10 +1,6 @@
 <template>
   <div class="contentBox">
     <div class="optionsBox">
-      <input type="checkbox" v-model="optionStore.showVertical" />
-      <span> Vertical: </span>
-      <input type="checkbox" v-model="optionStore.showMirrored" />
-      <span> Horizontal: </span>
       <select v-model="optionStore.gamemode">
         <option disabled value="">Please select one</option>
         <option value="leader">Leader</option>
@@ -29,7 +25,7 @@ const formattedWords = computed({
     return wordStore.words.join("\n");
   },
   set(newValue) {
-    wordStore.setWords(newValue);
+    wordStore.words = newValue.split("\n");
   },
 });
 </script>
