@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { useWordStore } from "../store";
+import { useRoomStore, useWordStore } from "../store";
 import { useRouter } from "vue-router";
 
 const wordStore = useWordStore();
-
+const roomStore = useRoomStore();
 const colorSeed = ref(42);
 const router = useRouter();
+
+const offlineMode = ref(false);
 
 const canStart = computed(
   () => wordStore.words.length >= 25 && colorSeed.value > 0
@@ -22,17 +24,22 @@ const formattedWords = computed({
 });
 
 function startGame() {
+  if (offlineMode.value) {
+    roomStore.roomID = undefined;
+  } else {
+  }
   router.push("/play");
 }
 </script>
 <template>
   <div class="contentBox">
     <textarea v-model="formattedWords"></textarea>
+    <div><input type="checkbox" v-model="offlineMode" /> Offline</div>
     <input type="text" v-model.number="colorSeed" />
     <!-- <router-link to="/play" class="startButton">Start</router-link> -->
     <input
       type="button"
-      value="Start"
+      value="Create"
       @click="startGame"
       :disabled="!canStart"
     />
