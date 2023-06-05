@@ -26,13 +26,22 @@ export const useRoomStore = defineStore("room", {
   }),
 });
 
+export interface WordlistSeed {
+  wordlist: string;
+  wordseed: number;
+}
+
+export interface OfflineRoom {
+  words: string[];
+  colors: (CardStateString | undefined)[];
+  wordseed?: WordlistSeed;
+  colorseed?: number;
+  owned: boolean;
+}
+
 export const useAPIStore = defineStore("api", {
   state: () => ({
-    offlineRooms: [] as {
-      words: string[];
-      colors: (CardStateString | undefined)[];
-      owned: boolean;
-    }[],
+    offlineRooms: [] as OfflineRoom[],
     rooms: [] as { sessionkey: string; created: number }[],
     adminkeys: {} as Record<string, string>,
   }),

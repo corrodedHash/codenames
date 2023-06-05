@@ -1,5 +1,7 @@
 # Views
+
 ## Room Create
+
 - Select words
   - Textbox with 25 lines
   - Either input manually, or select from wordlists to generate
@@ -15,6 +17,7 @@
     - Send words and colors through api
 
 ## Room List
+
 - Share button
   - If offline:
     - Share as admin with colors, or
@@ -24,11 +27,14 @@
     - Revealer can share as revealer/spectator
 - Edit button:
   - As owner, can change words and colors of existing room
+
 ## Room Join
+
 - Select Leader/Revealer/Spectator
   - Offer options depending on permissions
 
 # Ideas
+
 - Make rooms shareable
   - QR codes with URLs
   - Offline rooms have entire wordlist and colors in URL

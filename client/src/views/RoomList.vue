@@ -1,45 +1,31 @@
 <script setup lang="ts">
-import { onMounted } from "vue";
-import { useAPIStore, useWordStore } from "../store";
-import { CardStateString } from "../util";
+import { useRouter } from "vue-router";
+import { OfflineRoom, useAPIStore, useWordStore } from "../store";
 
 const API = useAPIStore();
 API.pollRooms();
-
-const wordStore = useWordStore();
+const router = useRouter();
 
 function handleClick(sessionkey: string) {
   console.log(sessionkey);
 }
-
-const wordsURL = new URL("/words.txt", import.meta.url).href;
-const colorsURL = new URL("/colors.txt", import.meta.url).href;
-
-let initWords: string[] = [];
-let initColors: (CardStateString | undefined)[] = [];
-
-async function init() {
-  const wordFetch = fetch(wordsURL).then((x) => x.text());
-  const colorFetch = fetch(colorsURL).then((x) => x.text());
-  const [words, colors] = await Promise.all([wordFetch, colorFetch]);
-  initWords = words.split("\n");
-  initColors = colors.split("\n") as (CardStateString | undefined)[];
-}
-onMounted(async () => {
-  await init();
-  handleOffline();
-});
-
-function handleOffline() {
-  wordStore.words = initWords;
-  wordStore.colors = initColors;
-  wordStore.revealed = [...wordStore.words.keys()].map(() => false);
+const wordStore = useWordStore();
+function handleOfflineRoom(offlineRoom: OfflineRoom) {
+  wordStore.words = offlineRoom.words;
+  wordStore.colors = offlineRoom.colors;
+  router.push("/play");
 }
 </script>
 <template>
   <div>
     <RouterLink to="/create">Create Room</RouterLink>
-    <div @click="handleOffline">Offline</div>
+    <div
+      v-for="(offlineRoom, index) in API.offlineRooms"
+      :key="index"
+      @click="handleOfflineRoom(offlineRoom)"
+    >
+      Offline Room: {{ offlineRoom.owned }}
+    </div>
     <div
       v-for="{ sessionkey, created } in API.rooms"
       :key="sessionkey"
