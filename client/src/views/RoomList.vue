@@ -25,6 +25,7 @@ function handleOfflineRoom(offlineRoom: OfflineRoom) {
       @click="handleOfflineRoom(offlineRoom)"
     >
       Offline Room: {{ offlineRoom.owned }}
+      {{ offlineRoom.words.slice(0, 3).join("") }}
     </div>
     <div
       v-for="{ sessionkey, created } in API.rooms"

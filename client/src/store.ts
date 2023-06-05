@@ -21,10 +21,12 @@ export const useOptionStore = defineStore("options", {
 
 export const useRoomStore = defineStore("room", {
   state: () => ({
-    gamemode: "spectator" as "leader" | "revealer" | "spectator",
+    gamemode: "spectator" as GameRole,
     roomID: undefined as undefined | string,
   }),
 });
+
+export type GameRole = "leader" | "revealer" | "spectator";
 
 export interface WordlistSeed {
   wordlist: string;
