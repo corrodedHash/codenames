@@ -3,6 +3,7 @@ import "./style.css";
 import GameView from "./views/GameView.vue";
 import RoomCreation from "./views/RoomCreation.vue";
 import RoomList from "./views/RoomList.vue";
+import RoomJoin from "./views/RoomJoin.vue";
 import App from "./App.vue";
 import { createRouter, createWebHashHistory } from "vue-router";
 
@@ -16,6 +17,7 @@ const pinia = createPinia();
 const routes = [
   { path: "/create", component: RoomCreation },
   { path: "/play", component: GameView },
+  { path: "/join", component: RoomJoin },
   { path: "/", component: RoomList },
 ];
 

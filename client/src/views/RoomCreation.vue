@@ -70,6 +70,7 @@ function startGame() {
       colorseed: colorSeed.value,
       words: chosenWords.value,
       colors: colors,
+      revealed: colors.map(() => false),
       wordseed: {
         wordlist: chosenWordlist.value,
         wordseed: wordSeed.value,
@@ -80,9 +81,15 @@ function startGame() {
 
     wordStore.words = chosenWords.value;
     wordStore.colors = colors;
+    router.push({
+      path: "/join",
+      query: {
+        offline: null,
+        roomID: (apiStore.offlineRooms.length - 1).toString(),
+      },
+    });
   } else {
   }
-  router.push("/play");
 }
 </script>
 <template>

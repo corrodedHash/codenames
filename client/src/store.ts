@@ -36,6 +36,7 @@ export interface WordlistSeed {
 export interface OfflineRoom {
   words: string[];
   colors: (CardStateString | undefined)[];
+  revealed: boolean[];
   wordseed?: WordlistSeed;
   colorseed?: number;
   owned: boolean;

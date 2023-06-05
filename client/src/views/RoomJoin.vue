@@ -9,9 +9,10 @@ const apiStore = useAPIStore();
 const chosenRole = ref("spectator" as GameRole);
 
 const roomInfo = computed(() => {
-  if (route.params["offline"] !== undefined) {
-    const roomid = route.params["roomID"];
+  if (route.query["offline"] !== undefined) {
+    const roomid = route.query["roomID"];
     if (Array.isArray(roomid)) throw Error("Param is array, should be string");
+    if (typeof roomid !== "string") throw Error("Param is not a string");
     const room = apiStore.offlineRooms[parseInt(roomid)];
     return {
       words: room.words,
@@ -20,13 +21,18 @@ const roomInfo = computed(() => {
       writeAccess: room.owned,
       roomID: roomid,
     };
+  } else {
+    throw Error("Cant handle online right now");
   }
-  throw Error("Cant handle online right now");
 });
 function handleJoin() {
   router.push({
     path: "/play",
-    params: { offline: "", roomID: roomInfo.value.roomID },
+    query: {
+      offline: null,
+      roomID: roomInfo.value.roomID,
+      gamerole: chosenRole.value,
+    },
   });
 }
 </script>

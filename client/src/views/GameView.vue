@@ -2,17 +2,47 @@
 import GameBoard from "../components/GameBoard.vue";
 import BoardSettings from "../components/BoardSettings.vue";
 
-import { useOptionStore, useWordStore } from "../store";
+import { GameRole, useAPIStore } from "../store";
 import { nextState } from "../util";
-import { ref } from "vue";
+import { computed, ref } from "vue";
+import { useRoute } from "vue-router";
 
-const wordStore = useWordStore();
-const configStore = useOptionStore();
+const route = useRoute();
+const gamerole = computed(() => route.query["gamerole"] as GameRole);
+const apiStore = useAPIStore();
+const isOffline = computed(() => route.query["offline"] !== undefined);
+const gameinfo = computed(() => {
+  if (isOffline.value) {
+    const roomid = route.query["roomID"];
+    if (typeof roomid !== "string") throw Error("roomID not a string");
+    const room = apiStore.offlineRooms[parseInt(roomid)];
+    return room;
+  } else {
+    throw Error("Online not supported");
+  }
+});
+
 function handleCellClick(index: number) {
-  if (configStore.gamemode === "revealer") {
-    wordStore.revealed.splice(index, 1, true);
-  } else if (configStore.gamemode === "offline") {
-    wordStore.colors.splice(index, 1, nextState(wordStore.colors[index]));
+  if (isOffline.value) {
+    switch (gamerole.value) {
+      case "leader":
+        gameinfo.value.revealed.splice(index, 1, true);
+        break;
+      case "revealer":
+        gameinfo.value.revealed.splice(index, 1, true);
+        break;
+      case "spectator":
+        if (!gameinfo.value.revealed[index]) {
+          gameinfo.value.revealed.splice(index, 1, true);
+          gameinfo.value.colors.splice(index, 1, "red");
+        } else {
+          gameinfo.value.colors.splice(
+            index,
+            1,
+            nextState(gameinfo.value.colors[index])
+          );
+        }
+    }
   }
 }
 const showSettings = ref(false);
@@ -26,10 +56,10 @@ const showSettings = ref(false);
       <BoardSettings />
     </div>
     <GameBoard
-      :words="wordStore.words"
-      :colors="wordStore.colors"
-      :revealed="wordStore.revealed"
-      :leader-mode="configStore.gamemode === 'leader'"
+      :words="gameinfo.words"
+      :colors="gameinfo.colors"
+      :revealed="gameinfo.revealed"
+      :leader-mode="gamerole === 'leader'"
       @cell-clicked="handleCellClick"
     />
   </div>
