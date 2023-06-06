@@ -3,6 +3,7 @@ import GameView from "./views/GameView.vue";
 import RoomCreation from "./views/RoomCreation.vue";
 import RoomList from "./views/RoomList.vue";
 import RoomJoin from "./views/RoomJoin.vue";
+import ShareReceiver from "./views/ShareReceiver.vue";
 
 function handleRoomID(route: RouteLocationNormalized) {
   const roomID = route.params.roomID;
@@ -34,7 +35,7 @@ const routes: RouteRecordRaw[] = [
     component: RoomJoin,
     props: handleRoomID,
   },
-
+  { path: "/share", component: ShareReceiver },
   { path: "/", component: RoomList },
 ];
 
