@@ -41,6 +41,7 @@ export interface OfflineRoom {
   wordseed?: WordlistSeed;
   colorseed?: number;
   owned: boolean;
+  id: number;
 }
 
 export const useAPIStore = defineStore("api", () => {

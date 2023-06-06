@@ -77,6 +77,7 @@ function startGame() {
               wordseed: wordSeed.value,
             }
           : undefined,
+      id: apiStore.offlineID,
     };
     apiStore.offlineRooms.push(x);
     const roomID = apiStore.offlineID.toString();
@@ -84,9 +85,9 @@ function startGame() {
     wordStore.words = chosenWords.value;
     wordStore.colors = colors;
     router.push({
-      path: "/join",
-      query: {
-        offline: null,
+      name: "join",
+      params: {
+        offline: "x",
         roomID,
       },
     });

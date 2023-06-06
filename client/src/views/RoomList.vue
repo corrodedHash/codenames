@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useRouter } from "vue-router";
-import { OfflineRoom, useAPIStore, useWordStore } from "../store";
+import { OfflineRoom, useAPIStore } from "../store";
 
 const API = useAPIStore();
 API.pollRooms();
@@ -9,11 +9,11 @@ const router = useRouter();
 function handleClick(sessionkey: string) {
   console.log(sessionkey);
 }
-const wordStore = useWordStore();
 function handleOfflineRoom(offlineRoom: OfflineRoom) {
-  wordStore.words = offlineRoom.words;
-  wordStore.colors = offlineRoom.colors;
-  router.push("/play");
+  router.push({
+    name: "join",
+    params: { offline: "x", roomID: offlineRoom.id },
+  });
 }
 </script>
 <template>

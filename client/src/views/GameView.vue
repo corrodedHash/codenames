@@ -5,17 +5,19 @@ import BoardSettings from "../components/BoardSettings.vue";
 import { GameRole, useAPIStore } from "../store";
 import { nextState } from "../util";
 import { computed, ref } from "vue";
-import { useRoute } from "vue-router";
 
-const route = useRoute();
-const gamerole = computed(() => route.query["gamerole"] as GameRole);
+const props = defineProps<{
+  offline: boolean;
+  roomID: string;
+  role: GameRole;
+}>();
 const apiStore = useAPIStore();
-const isOffline = computed(() => route.query["offline"] !== undefined);
 const gameinfo = computed(() => {
-  if (isOffline.value) {
-    const roomid = route.query["roomID"];
-    if (typeof roomid !== "string") throw Error("roomID not a string");
-    const room = apiStore.offlineRooms[parseInt(roomid)];
+  if (props.offline) {
+    const room = apiStore.offlineRooms.find(
+      (v) => v.id === parseInt(props.roomID)
+    );
+    if (room === undefined) throw Error("Could not find roomid");
     return room;
   } else {
     throw Error("Online not supported");
@@ -23,8 +25,8 @@ const gameinfo = computed(() => {
 });
 
 function handleCellClick(index: number) {
-  if (isOffline.value) {
-    switch (gamerole.value) {
+  if (props.offline) {
+    switch (props.role) {
       case "leader":
         gameinfo.value.revealed.splice(index, 1, true);
         break;
@@ -59,7 +61,7 @@ const showSettings = ref(false);
       :words="gameinfo.words"
       :colors="gameinfo.colors"
       :revealed="gameinfo.revealed"
-      :leader-mode="gamerole === 'leader'"
+      :leader-mode="role === 'leader'"
       @cell-clicked="handleCellClick"
     />
   </div>

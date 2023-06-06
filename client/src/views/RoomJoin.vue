@@ -1,25 +1,26 @@
 <script setup lang="ts">
-import { useRoute, useRouter } from "vue-router";
+import { useRouter } from "vue-router";
 import { GameRole, useAPIStore } from "../store";
 import { computed, ref } from "vue";
-const route = useRoute();
 const router = useRouter();
 const apiStore = useAPIStore();
 
 const chosenRole = ref("spectator" as GameRole);
 
+const props = defineProps<{ offline: boolean; roomID: string }>();
+
 const roomInfo = computed(() => {
-  if (route.query["offline"] !== undefined) {
-    const roomid = route.query["roomID"];
-    if (Array.isArray(roomid)) throw Error("Param is array, should be string");
-    if (typeof roomid !== "string") throw Error("Param is not a string");
-    const room = apiStore.offlineRooms[parseInt(roomid)];
+  if (props.offline) {
+    const room = apiStore.offlineRooms.find(
+      (v) => v.id === parseInt(props.roomID)
+    );
+    if (room === undefined) throw Error("Unknown room");
     return {
       words: room.words,
       colors: room.colors,
       readAccess: room.owned,
       writeAccess: room.owned,
-      roomID: roomid,
+      roomID: props.roomID,
     };
   } else {
     throw Error("Cant handle online right now");
@@ -27,11 +28,11 @@ const roomInfo = computed(() => {
 });
 function handleJoin() {
   router.push({
-    path: "/play",
-    query: {
+    name: "play",
+    params: {
       offline: null,
       roomID: roomInfo.value.roomID,
-      gamerole: chosenRole.value,
+      role: chosenRole.value,
     },
   });
 }
