@@ -47,20 +47,12 @@ export const useAPIStore = defineStore("api", () => {
   const offlineRoomStorageKey = "offlineRooms";
   const offlineIDStorageKey = "offlineID";
 
-  const storedOfflineRoomsJSON = localStorage.getItem(offlineRoomStorageKey);
-  let storedOfflineRooms: OfflineRoom[];
-  if (storedOfflineRoomsJSON !== null) {
-    storedOfflineRooms = JSON.parse(storedOfflineRoomsJSON);
-  } else {
-    storedOfflineRooms = [];
-  }
-  const storedOfflineIDJSON = localStorage.getItem(offlineIDStorageKey);
-  let storedOfflineID: number;
-  if (storedOfflineIDJSON !== null) {
-    storedOfflineID = JSON.parse(storedOfflineIDJSON);
-  } else {
-    storedOfflineID = 0;
-  }
+  const storedOfflineRooms: OfflineRoom[] = JSON.parse(
+    localStorage.getItem(offlineRoomStorageKey) || "[]"
+  );
+  const storedOfflineID: number = JSON.parse(
+    localStorage.getItem(offlineIDStorageKey) || "0"
+  );
   const offlineRooms = ref(storedOfflineRooms);
   const offlineID = ref(storedOfflineID);
   const rooms = ref([] as { sessionkey: string; created: number }[]);
