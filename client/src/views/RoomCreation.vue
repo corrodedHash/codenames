@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
-import { OfflineRoom, useAPIStore, useRoomStore, useWordStore } from "../store";
+import { OfflineRoom, useAPIStore, useWordStore } from "../store";
 import { useRouter } from "vue-router";
 import { permutationFromSeed } from "../permutation";
 import { CardStateString } from "../util";
@@ -12,7 +12,6 @@ const wordlists = Object.entries(import.meta.glob("../assets/wordlists/*.json"))
   .reduce((x, v) => ({ ...x, ...v }), {});
 
 const wordStore = useWordStore();
-const roomStore = useRoomStore();
 const apiStore = useAPIStore();
 const router = useRouter();
 
@@ -71,21 +70,24 @@ function startGame() {
       words: chosenWords.value,
       colors: colors,
       revealed: colors.map(() => false),
-      wordseed: {
-        wordlist: chosenWordlist.value,
-        wordseed: wordSeed.value,
-      },
+      wordseed:
+        chosenWordlist.value !== undefined
+          ? {
+              wordlist: chosenWordlist.value,
+              wordseed: wordSeed.value,
+            }
+          : undefined,
     };
     apiStore.offlineRooms.push(x);
-    roomStore.roomID = undefined;
-
+    const roomID = apiStore.offlineID.toString();
+    apiStore.offlineID += 1;
     wordStore.words = chosenWords.value;
     wordStore.colors = colors;
     router.push({
       path: "/join",
       query: {
         offline: null,
-        roomID: (apiStore.offlineRooms.length - 1).toString(),
+        roomID,
       },
     });
   } else {

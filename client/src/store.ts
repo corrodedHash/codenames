@@ -45,6 +45,7 @@ export interface OfflineRoom {
 export const useAPIStore = defineStore("api", {
   state: () => ({
     offlineRooms: [] as OfflineRoom[],
+    offlineID: 0 as number,
     rooms: [] as { sessionkey: string; created: number }[],
     adminkeys: {} as Record<string, string>,
   }),
