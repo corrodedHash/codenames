@@ -1,4 +1,9 @@
-import { RouteRecordRaw, createRouter, createWebHashHistory } from "vue-router";
+import {
+  RouteLocationNormalized,
+  RouteRecordRaw,
+  createRouter,
+  createWebHashHistory,
+} from "vue-router";
 import GameView from "./views/GameView.vue";
 import RoomCreation from "./views/RoomCreation.vue";
 import RoomList from "./views/RoomList.vue";
