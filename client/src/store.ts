@@ -2,6 +2,7 @@ import { defineStore } from "pinia";
 
 import { CardStateString } from "./util";
 import { ref, watch } from "vue";
+import { OfflineRoom } from "./offlineRoom";
 
 const APIRoot = "/api/";
 
@@ -28,21 +29,6 @@ export const useRoomStore = defineStore("room", {
 });
 
 export type GameRole = "leader" | "revealer" | "spectator";
-
-export interface WordlistSeed {
-  wordlist: string;
-  wordseed: number;
-}
-
-export interface OfflineRoom {
-  words: string[];
-  colors: (CardStateString | undefined)[];
-  revealed: boolean[];
-  wordseed?: WordlistSeed;
-  colorseed?: number;
-  owned: boolean;
-  id: number;
-}
 
 export const useAPIStore = defineStore("api", () => {
   const offlineRoomStorageKey = "offlineRooms";

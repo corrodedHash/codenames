@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
-import { OfflineRoom, useAPIStore, useWordStore } from "../store";
+import { useAPIStore, useWordStore } from "../store";
 import { useRouter } from "vue-router";
 import { permutationFromSeed } from "../permutation";
 import { CardStateString } from "../util";
+import { OfflineRoom } from "../offlineRoom";
 
 const wordlists = Object.entries(import.meta.glob("../assets/wordlists/*.json"))
   .map(([n, p]) => {
