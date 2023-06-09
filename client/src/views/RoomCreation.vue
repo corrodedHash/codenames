@@ -2,15 +2,12 @@
 import { computed, ref, watch } from "vue";
 import { useAPIStore, useWordStore } from "../store";
 import { useRouter } from "vue-router";
-import { permutationFromSeed } from "../permutation";
-import { CardStateString } from "../util";
 import { OfflineRoom } from "../offlineRoom";
-
-const wordlists = Object.entries(import.meta.glob("../assets/wordlists/*.json"))
-  .map(([n, p]) => {
-    return { [pathToWordlistName(n)]: p };
-  })
-  .reduce((x, v) => ({ ...x, ...v }), {});
+import {
+  buildColorsFromSeed,
+  generateWords,
+  wordlists,
+} from "../wordlistManager";
 
 const wordStore = useWordStore();
 const apiStore = useAPIStore();
@@ -25,10 +22,8 @@ const chosenWordlist = ref(Object.keys(wordlists)[0]);
 watch(
   [chosenWordlist, wordSeed],
   async ([w, ws]) => {
-    if (w !== undefined) {
-      const wl = ((await wordlists[w]()) as { default: string[] }).default;
-      chosenWords.value = permutationFromSeed(ws, wl, 25);
-    }
+    if (w === undefined) return;
+    chosenWords.value = await generateWords(w, ws);
   },
   { immediate: true }
 );
@@ -46,22 +41,6 @@ const formattedWords = computed({
   },
 });
 
-function pathToWordlistName(path: string) {
-  const basename = path.replace(/.*\//, "");
-  const noextension = basename.replace(".json", "");
-  return noextension;
-}
-
-function buildColorsFromSeed(seed: number): CardStateString[] {
-  const result: CardStateString[] = [
-    ...Array(9).fill("red"),
-    ...Array(8).fill("blue"),
-    ...Array(7).fill("neutral"),
-    "black",
-  ];
-  return permutationFromSeed(seed, result, result.length);
-}
-
 function startGame() {
   if (offlineMode.value) {
     const colors = buildColorsFromSeed(colorSeed.value);
@@ -78,11 +57,8 @@ function startGame() {
               wordseed: wordSeed.value,
             }
           : undefined,
-      id: apiStore.offlineID,
     };
-    apiStore.offlineRooms.push(x);
-    const roomID = apiStore.offlineID.toString();
-    apiStore.offlineID += 1;
+    const roomID = apiStore.addOfflineRoom(x).toString();
     wordStore.words = chosenWords.value;
     wordStore.colors = colors;
     router.push({

@@ -34,8 +34,8 @@ export const useAPIStore = defineStore("api", () => {
   const offlineRoomStorageKey = "offlineRooms";
   const offlineIDStorageKey = "offlineID";
 
-  const storedOfflineRooms: OfflineRoom[] = JSON.parse(
-    localStorage.getItem(offlineRoomStorageKey) || "[]"
+  const storedOfflineRooms: Record<number, OfflineRoom> = JSON.parse(
+    localStorage.getItem(offlineRoomStorageKey) || "{}"
   );
   const storedOfflineID: number = JSON.parse(
     localStorage.getItem(offlineIDStorageKey) || "0"
@@ -49,6 +49,13 @@ export const useAPIStore = defineStore("api", () => {
     const fetchedRooms = await fetch(APIRoot + "list").then((x) => x.json());
     rooms.value = fetchedRooms;
   }
+
+  function addOfflineRoom(room: OfflineRoom): number {
+    offlineID.value += 1;
+    offlineRooms.value[offlineID.value] = room;
+    return offlineID.value;
+  }
+
   watch(offlineID, (v) => {
     localStorage.setItem(offlineIDStorageKey, JSON.stringify(v));
   });
@@ -61,5 +68,12 @@ export const useAPIStore = defineStore("api", () => {
     { deep: true }
   );
 
-  return { offlineRooms, offlineID, rooms, adminkeys, pollRooms };
+  return {
+    offlineRooms,
+    offlineID,
+    rooms,
+    adminkeys,
+    pollRooms,
+    addOfflineRoom,
+  };
 });

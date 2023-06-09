@@ -1,4 +1,5 @@
 import { CardStateString } from "./util";
+import { buildColorsFromSeed, generateWords } from "./wordlistManager";
 
 export interface WordlistSeed {
   wordlist: string;
@@ -12,7 +13,6 @@ export interface OfflineRoom {
   wordseed?: WordlistSeed;
   colorseed?: number;
   owned: boolean;
-  id: number;
 }
 
 interface SharedOfflineRoomManual {
@@ -31,7 +31,9 @@ type SharedOfflineRoom = SharedOfflineRoomWords & {
   colorseed?: number;
 };
 
-function isSharedOfflineRoom(o: object): o is SharedOfflineRoom {
+function isSharedOfflineRoom(o: unknown): o is SharedOfflineRoom {
+  if (typeof o !== "object") return false;
+  if (o === null) return false;
   const hasWords = "words" in o;
   const hasWordseed = "wordseed" in o;
   if (hasWords === hasWordseed) return false;
@@ -39,13 +41,47 @@ function isSharedOfflineRoom(o: object): o is SharedOfflineRoom {
   return true;
 }
 
-export function offlineRoomFromJSON(json: string): OfflineRoom {
-  const parsed = JSON.parse(json);
-  if (typeof parsed !== "object") throw Error("Not an object");
-  if (!isSharedOfflineRoom(parsed)) throw Error("Not an offline room");
+export function shareOfflineRoom(room: OfflineRoom): SharedOfflineRoom {
+  const colorseed = room.colorseed;
+  const colors =
+    room.colorseed === undefined
+      ? room.colors.every((v): v is CardStateString => v !== undefined)
+        ? room.colors
+        : undefined
+      : undefined;
+  const words =
+    room.wordseed === undefined
+      ? { words: room.words }
+      : { wordseed: room.wordseed };
+  return { colorseed, colors, ...words };
+}
 
+export async function offlineRoomFromJSON(json: string): Promise<OfflineRoom> {
+  const parsed = JSON.parse(json);
+  if (!isSharedOfflineRoom(parsed)) throw Error("Not an offline room");
+  let words = [];
   if (parsed.wordseed !== undefined) {
+    words = await generateWords(
+      parsed.wordseed.wordlist,
+      parsed.wordseed.wordseed
+    );
   } else {
-    parsed.wordseed;
+    words = parsed.words;
   }
+  const colors =
+    parsed.colors !== undefined
+      ? parsed.colors
+      : parsed.colorseed !== undefined
+      ? buildColorsFromSeed(parsed.colorseed)
+      : words.map(() => undefined);
+  const revealed = words.map(() => false);
+  const owned = parsed.colors !== undefined || parsed.colorseed !== undefined;
+  return {
+    colors,
+    colorseed: parsed.colorseed,
+    wordseed: parsed.wordseed,
+    revealed,
+    words,
+    owned,
+  };
 }
