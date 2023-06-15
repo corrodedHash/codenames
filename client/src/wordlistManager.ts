@@ -8,7 +8,7 @@ function pathToWordlistName(path: string) {
 }
 
 export const wordlists = Object.entries(
-  import.meta.glob("../assets/wordlists/*.json")
+  import.meta.glob("./assets/wordlists/*.json")
 )
   .map(([n, p]) => {
     return { [pathToWordlistName(n)]: p };

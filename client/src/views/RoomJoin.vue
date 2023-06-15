@@ -11,9 +11,7 @@ const props = defineProps<{ offline: boolean; roomID: string }>();
 
 const roomInfo = computed(() => {
   if (props.offline) {
-    const room = apiStore.offlineRooms.find(
-      (v) => v.id === parseInt(props.roomID)
-    );
+    const room = apiStore.offlineRooms[parseInt(props.roomID)];
     if (room === undefined) throw Error("Unknown room");
     return {
       words: room.words,

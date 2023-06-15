@@ -1,7 +1,6 @@
 import {
   RouteLocationNormalized,
   RouteRecordRaw,
-  RouteLocation,
   createRouter,
   createWebHashHistory,
 } from "vue-router";
@@ -9,6 +8,7 @@ import GameView from "./views/GameView.vue";
 import RoomCreation from "./views/RoomCreation.vue";
 import RoomList from "./views/RoomList.vue";
 import RoomJoin from "./views/RoomJoin.vue";
+import ShareReceiver from "./views/ShareReceiver.vue";
 
 const offlineTag = "x";
 const onlineTag = "o";
@@ -43,14 +43,8 @@ const routes: RouteRecordRaw[] = [
   {
     path: `/s/${offlineTag}/:shareinfo`,
     name: "shareReceive",
-    redirect(to: RouteLocation) {
-      const shareinfoRaw = to.params["shareinfo"] as string;
-      const shareinfo = JSON.parse(atob(shareinfoRaw));
-
-      return {
-        name: "/join",
-      };
-    },
+    component: ShareReceiver,
+    props: true,
   },
   { path: "/", component: RoomList },
 ];

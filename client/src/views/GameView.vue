@@ -14,9 +14,7 @@ const props = defineProps<{
 const apiStore = useAPIStore();
 const gameinfo = computed(() => {
   if (props.offline) {
-    const room = apiStore.offlineRooms.find(
-      (v) => v.id === parseInt(props.roomID)
-    );
+    const room = apiStore.offlineRooms[parseInt(props.roomID)];
     if (room === undefined) throw Error("Could not find roomid");
     return room;
   } else {

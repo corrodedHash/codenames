@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useRouter } from "vue-router";
-import { OfflineRoom, useAPIStore } from "../store";
+import { useAPIStore } from "../store";
+import { shareOfflineRoom } from "../offlineRoom";
 
 const API = useAPIStore();
 API.pollRooms();
@@ -9,16 +10,19 @@ const router = useRouter();
 function handleClick(sessionkey: string) {
   console.log(sessionkey);
 }
-function handleOfflineRoom(offlineRoom: OfflineRoom) {
+function handleOfflineRoom(offlineRoomID: number) {
   router.push({
     name: "join",
-    params: { offline: "x", roomID: offlineRoom.id },
+    params: { offline: "x", roomID: offlineRoomID.toString() },
   });
 }
 
-function handleOfflineDelete(offlineRoom: OfflineRoom) {
-  const index = API.offlineRooms.findIndex((v) => v.id === offlineRoom.id);
-  API.offlineRooms.splice(index, 1);
+function handleOfflineDelete(offlineRoomID: number) {
+  delete API.offlineRooms[offlineRoomID];
+}
+
+function handleOfflineShare(offlineRoomID: number) {
+  alert(shareOfflineRoom(API.offlineRooms[offlineRoomID]));
 }
 </script>
 <template>
@@ -28,19 +32,25 @@ function handleOfflineDelete(offlineRoom: OfflineRoom) {
     </RouterLink>
     <div class="offlineRoomBox">
       <div
-        v-for="(offlineRoom, index) in API.offlineRooms"
-        :key="index"
+        v-for="[offlineRoomID, offlineRoom] in Object.entries(API.offlineRooms)"
+        :key="offlineRoomID"
         :class="{ offlineRoom: true, owned: offlineRoom.owned }"
       >
-        <span class="nameBox" @click="handleOfflineRoom(offlineRoom)">
+        <span
+          class="nameBox"
+          @click="handleOfflineRoom(parseInt(offlineRoomID))"
+        >
           {{ offlineRoom.words.slice(0, 3).join("").replace(" ", "") }}
         </span>
         <span class="optionBox">
           <i-mdi-delete-outline
             class="hoverEvent"
-            @click="handleOfflineDelete(offlineRoom)"
+            @click="handleOfflineDelete(parseInt(offlineRoomID))"
           />
-          <i-mdi-share-variant-outline class="hoverEvent" />
+          <i-mdi-share-variant-outline
+            class="hoverEvent"
+            @click="handleOfflineShare(parseInt(offlineRoomID))"
+          />
         </span>
       </div>
     </div>
