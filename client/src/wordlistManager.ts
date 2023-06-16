@@ -1,5 +1,5 @@
-import { permutationFromSeed } from "./permutation";
-import { CardStateString } from "./util";
+import { permutationFromSeed } from "./util/permutation";
+import { CardStateString } from "./util/util";
 
 function pathToWordlistName(path: string) {
   const basename = path.replace(/.*\//, "");

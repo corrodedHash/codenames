@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useRouter } from "vue-router";
 import { useAPIStore } from "../store";
-import { shareOfflineRoom } from "../offlineRoom";
+import { shareOfflineRoom } from "../util/offlineRoom";
 
 const API = useAPIStore();
 API.pollRooms();

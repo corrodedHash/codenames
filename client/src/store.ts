@@ -1,18 +1,9 @@
 import { defineStore } from "pinia";
 
-import { CardStateString } from "./util";
 import { ref, watch } from "vue";
-import { OfflineRoom } from "./offlineRoom";
+import { OfflineRoom } from "./util/offlineRoom";
 
 const APIRoot = "/api/";
-
-export const useWordStore = defineStore("words", {
-  state: () => ({
-    words: [] as string[],
-    colors: [] as (CardStateString | undefined)[],
-    revealed: [] as boolean[],
-  }),
-});
 
 export const useOptionStore = defineStore("options", {
   state: () => ({

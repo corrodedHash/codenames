@@ -1,15 +1,14 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
-import { useAPIStore, useWordStore } from "../store";
+import { useAPIStore } from "../store";
 import { useRouter } from "vue-router";
-import { OfflineRoom } from "../offlineRoom";
+import { OfflineRoom } from "../util/offlineRoom";
 import {
   buildColorsFromSeed,
   generateWords,
   wordlists,
 } from "../wordlistManager";
 
-const wordStore = useWordStore();
 const apiStore = useAPIStore();
 const router = useRouter();
 
@@ -59,8 +58,6 @@ function startGame() {
           : undefined,
     };
     const roomID = apiStore.addOfflineRoom(x).toString();
-    wordStore.words = chosenWords.value;
-    wordStore.colors = colors;
     router.push({
       name: "join",
       params: {

@@ -1,5 +1,5 @@
 import { CardStateString } from "./util";
-import { buildColorsFromSeed, generateWords } from "./wordlistManager";
+import { buildColorsFromSeed, generateWords } from "../wordlistManager";
 
 export interface WordlistSeed {
   wordlist: string;

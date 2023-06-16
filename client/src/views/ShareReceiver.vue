@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useRouter } from "vue-router";
 import { watch } from "vue";
-import { OfflineRoom, offlineRoomFromJSON } from "../offlineRoom";
+import { OfflineRoom, offlineRoomFromJSON } from "../util/offlineRoom";
 import { useAPIStore } from "../store";
 import { ref } from "vue";
 const props = defineProps<{ shareinfo: string }>();

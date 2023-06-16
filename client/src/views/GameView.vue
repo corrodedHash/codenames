@@ -3,7 +3,7 @@ import GameBoard from "../components/GameBoard.vue";
 import BoardSettings from "../components/BoardSettings.vue";
 
 import { GameRole, useAPIStore } from "../store";
-import { nextState } from "../util";
+import { nextState } from "../util/util";
 import { computed, ref } from "vue";
 
 const props = defineProps<{
