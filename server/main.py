@@ -1,5 +1,6 @@
 import enum
 from typing import Annotated
+import typing
 from uuid import UUID, uuid4
 
 from fastapi import Depends, FastAPI, HTTPException, Header, status
@@ -14,14 +15,20 @@ class CellColor(str, enum.Enum):
     NEUTRAL = "neutral"
 
 
+class RoomRole(str, enum.Enum):
+    ADMIN = "admin"
+    SPYMASTER = "spymaster"
+    REVEALER = "revealer"
+    SPECTATOR = "spectator"
+
+
 class Room(BaseModel):
     words: list[str]
     colors: list[CellColor]
     revealed: list[bool] = Field(default_factory=lambda: [False] * 25)
     clickState: int = 0
     roomState: int = 0
-    adminTokens: list[str] = Field(default_factory=list)
-    participantTokens: list[str] = Field(default_factory=list)
+    participantTokens: dict[str, RoomRole] = Field(default_factory=dict)
     creation: datetime.datetime = Field(default_factory=datetime.datetime.now)
 
 
@@ -83,7 +90,9 @@ def create_room(params: RoomCreationParams) -> RoomCreationResponse:
         raise HTTPException(status_code=500, detail="Bad luck")
     admintoken = uuid4().hex
     ROOMS[roomID] = Room(
-        words=params.words, colors=params.colors, adminTokens=[admintoken]
+        words=params.words,
+        colors=params.colors,
+        participantTokens={admintoken: RoomRole.ADMIN},
     )
     return RoomCreationResponse(id=roomID, token=admintoken)
 
@@ -92,9 +101,11 @@ class RoomCredentials:
     def __init__(self, roomID: UUID, authorization: Annotated[str, Header()]):
         room = ROOMS[roomID]
         token = authorization.replace("Bearer ", "")
-        self.isAdmin = token in room.adminTokens
-        if not (self.isAdmin and token in room.participantTokens):
-            raise HTTPException(status_code=401)
+        access_forbidden_exception = HTTPException(status_code=401)
+        if token not in room.participantTokens:
+            raise access_forbidden_exception
+        self.isAdmin = room.participantTokens[token] == RoomRole.ADMIN
+        self.role = room.participantTokens[token]
 
 
 @app.patch("/room/{roomID}")
@@ -121,12 +132,43 @@ def delete_room(
     del ROOMS[roomID]
 
 
+class RoomInfo(BaseModel):
+    words: list[str]
+    revealed: list[bool]
+    colors: list[CellColor | None]
+
+
 @app.get("/room/{roomID}")
 def get_room(
     roomID: UUID,
     creds: Annotated[RoomCredentials, Depends()],
-):
-    pass
+) -> RoomInfo:
+    room = ROOMS[roomID]
+    if creds.role in [RoomRole.ADMIN, RoomRole.SPYMASTER]:
+        return RoomInfo(
+            words=room.words,
+            revealed=room.revealed,
+            colors=typing.cast(list[CellColor | None], room.colors),
+        )
+    return RoomInfo(
+        words=room.words,
+        revealed=room.revealed,
+        colors=[
+            color if cellOpen else None
+            for color, cellOpen in zip(room.colors, room.revealed)
+        ],
+    )
+
+
+@app.put("/room/{roomID}/{cell}")
+def click_room(
+    roomID: UUID, cell: int, creds: Annotated[RoomCredentials, Depends()]
+) -> None:
+    room = ROOMS[roomID]
+
+    if creds.role == RoomRole.SPECTATOR:
+        raise HTTPException(status_code=401)
+    room.revealed[cell] = True
 
 
 @app.get("/roomUpdates/{roomID}")
