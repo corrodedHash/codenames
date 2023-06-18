@@ -122,10 +122,17 @@ def delete_room(
 
 
 @app.get("/room/{roomID}")
-def get_room(roomID: UUID):
+def get_room(
+    roomID: UUID,
+    creds: Annotated[RoomCredentials, Depends()],
+):
     pass
 
 
 @app.get("/roomUpdates/{roomID}")
-def get_room_updates(roomID: UUID) -> RoomUpdateStatus:
-    return RoomUpdateStatus(clickState=0, roomState=0)
+def get_room_updates(
+    roomID: UUID,
+    creds: Annotated[RoomCredentials, Depends()],
+) -> RoomUpdateStatus:
+    room = ROOMS[roomID]
+    return RoomUpdateStatus(clickState=room.clickState, roomState=room.roomState)
