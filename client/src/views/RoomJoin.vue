@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import { useRouter } from "vue-router";
-import { GameRole, useAPIStore } from "../store";
-import { computed, ref } from "vue";
+import { GameRole, useOfflineRoomStore } from "../store";
+import { computed } from "vue";
 const router = useRouter();
-const apiStore = useAPIStore();
-
-const chosenRole = ref("spectator" as GameRole);
+const apiStore = useOfflineRoomStore();
 
 const props = defineProps<{ offline: boolean; roomID: string }>();
 
@@ -25,14 +23,16 @@ const roomInfo = computed(() => {
   }
 });
 function handleJoin(role: GameRole) {
-  router.push({
-    name: "play",
-    params: {
-      offline: null,
-      roomID: roomInfo.value.roomID,
-      role,
-    },
-  });
+  if (props.offline) {
+    router.push({
+      name: "playOffline",
+      params: {
+        roomID: roomInfo.value.roomID,
+        role,
+      },
+    });
+  } else {
+  }
 }
 </script>
 

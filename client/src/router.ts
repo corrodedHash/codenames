@@ -10,9 +10,6 @@ import RoomList from "./views/RoomList.vue";
 import RoomJoin from "./views/RoomJoin.vue";
 import ShareReceiver from "./views/ShareReceiver.vue";
 
-const offlineTag = "x";
-const onlineTag = "o";
-
 function handleRoomID(route: RouteLocationNormalized) {
   const roomID = route.params.roomID;
   if (typeof roomID !== "string")
@@ -23,8 +20,8 @@ function handleRoomID(route: RouteLocationNormalized) {
 const routes: RouteRecordRaw[] = [
   { path: "/create", component: RoomCreation },
   {
-    path: `/play/${offlineTag}/:roomID/:role`,
-    name: "play",
+    path: `/play/x/:roomID/:role`,
+    name: "playOffline",
     component: GameView,
     props: (route) => {
       return {
@@ -35,14 +32,20 @@ const routes: RouteRecordRaw[] = [
     },
   },
   {
-    path: `/join/${offlineTag}/:roomID`,
-    name: "join",
+    path: `/join/x/:roomID`,
+    name: "joinOffline",
     component: RoomJoin,
     props: (route) => ({ roomID: handleRoomID(route), offline: true }),
   },
   {
-    path: `/s/${offlineTag}/:shareinfo`,
-    name: "shareReceive",
+    path: `/join/o/:roomID`,
+    name: "joinOnfline",
+    component: RoomJoin,
+    props: (route) => ({ roomID: handleRoomID(route), offline: false }),
+  },
+  {
+    path: `/s/x/:shareinfo`,
+    name: "shareReceiveOffline",
     component: ShareReceiver,
     props: true,
   },

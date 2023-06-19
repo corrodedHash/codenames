@@ -3,7 +3,7 @@ import { defineStore } from "pinia";
 import { ref, watch } from "vue";
 import { OfflineRoom } from "./util/offlineRoom";
 
-const APIRoot = "/api/";
+// const APIRoot = "/api/";
 
 export const useOptionStore = defineStore("options", {
   state: () => ({
@@ -12,16 +12,23 @@ export const useOptionStore = defineStore("options", {
   }),
 });
 
-export const useRoomStore = defineStore("room", {
-  state: () => ({
-    gamemode: "spectator" as GameRole,
-    roomID: undefined as undefined | string,
-  }),
-});
-
 export type GameRole = "leader" | "revealer" | "spectator";
 
-export const useAPIStore = defineStore("api", () => {
+export const useRoomStore = defineStore("rooms", () => {
+  const roomStorageKey = "rooms";
+
+  const rooms: Record<string, string> = JSON.parse(
+    localStorage.getItem(roomStorageKey) || "{}"
+  );
+
+  watch(rooms, (v) => {
+    localStorage.setItem(roomStorageKey, JSON.stringify(v));
+  });
+
+  return { rooms };
+});
+
+export const useOfflineRoomStore = defineStore("offlineRoom", () => {
   const offlineRoomStorageKey = "offlineRooms";
   const offlineIDStorageKey = "offlineID";
 
@@ -33,13 +40,6 @@ export const useAPIStore = defineStore("api", () => {
   );
   const offlineRooms = ref(storedOfflineRooms);
   const offlineID = ref(storedOfflineID);
-  const rooms = ref([] as { sessionkey: string; created: number }[]);
-  const adminkeys = ref({} as Record<string, string>);
-
-  async function pollRooms() {
-    const fetchedRooms = await fetch(APIRoot + "list").then((x) => x.json());
-    rooms.value = fetchedRooms;
-  }
 
   function addOfflineRoom(room: OfflineRoom): number {
     offlineID.value += 1;
@@ -62,9 +62,6 @@ export const useAPIStore = defineStore("api", () => {
   return {
     offlineRooms,
     offlineID,
-    rooms,
-    adminkeys,
-    pollRooms,
     addOfflineRoom,
   };
 });

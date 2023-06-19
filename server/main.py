@@ -171,6 +171,11 @@ def click_room(
     room.revealed[cell] = True
 
 
+@app.get("/role/{roomID}")
+def get_role(roomID: UUID, creds: Annotated[RoomCredentials, Depends()]) -> RoomRole:
+    return creds.role
+
+
 @app.get("/roomUpdates/{roomID}")
 def get_room_updates(
     roomID: UUID,

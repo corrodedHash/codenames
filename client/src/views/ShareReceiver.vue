@@ -2,10 +2,10 @@
 import { useRouter } from "vue-router";
 import { watch } from "vue";
 import { OfflineRoom, offlineRoomFromJSON } from "../util/offlineRoom";
-import { useAPIStore } from "../store";
+import { useOfflineRoomStore } from "../store";
 import { ref } from "vue";
 const props = defineProps<{ shareinfo: string }>();
-const apiStore = useAPIStore();
+const apiStore = useOfflineRoomStore();
 const sharedRoom = ref(undefined as undefined | OfflineRoom);
 const router = useRouter();
 watch(
@@ -21,9 +21,8 @@ function handleClick() {
   if (sharedRoom.value === undefined) return;
   const roomID = apiStore.addOfflineRoom(sharedRoom.value).toString();
   router.push({
-    name: "join",
+    name: "joinOffline",
     params: {
-      offline: "x",
       roomID,
     },
   });

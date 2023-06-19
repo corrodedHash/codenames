@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
-import { useAPIStore } from "../store";
+import { useOfflineRoomStore } from "../store";
 import { useRouter } from "vue-router";
 import { OfflineRoom } from "../util/offlineRoom";
 import {
@@ -9,7 +9,7 @@ import {
   wordlists,
 } from "../wordlistManager";
 
-const apiStore = useAPIStore();
+const apiStore = useOfflineRoomStore();
 const router = useRouter();
 
 const offlineMode = ref(false);
@@ -40,32 +40,38 @@ const formattedWords = computed({
   },
 });
 
+function startOfflineGame() {
+  const colors = buildColorsFromSeed(colorSeed.value);
+  const x: OfflineRoom = {
+    owned: true,
+    colorseed: colorSeed.value,
+    words: chosenWords.value,
+    colors: colors,
+    revealed: colors.map(() => false),
+    wordseed:
+      chosenWordlist.value !== undefined
+        ? {
+            wordlist: chosenWordlist.value,
+            wordseed: wordSeed.value,
+          }
+        : undefined,
+  };
+  const roomID = apiStore.addOfflineRoom(x).toString();
+  router.push({
+    name: "joinOffline",
+    params: {
+      roomID,
+    },
+  });
+}
+
+function startOnlineGame() {}
+
 function startGame() {
   if (offlineMode.value) {
-    const colors = buildColorsFromSeed(colorSeed.value);
-    const x: OfflineRoom = {
-      owned: true,
-      colorseed: colorSeed.value,
-      words: chosenWords.value,
-      colors: colors,
-      revealed: colors.map(() => false),
-      wordseed:
-        chosenWordlist.value !== undefined
-          ? {
-              wordlist: chosenWordlist.value,
-              wordseed: wordSeed.value,
-            }
-          : undefined,
-    };
-    const roomID = apiStore.addOfflineRoom(x).toString();
-    router.push({
-      name: "join",
-      params: {
-        offline: "x",
-        roomID,
-      },
-    });
+    startOfflineGame();
   } else {
+    startOnlineGame();
   }
 }
 </script>

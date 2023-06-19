@@ -1,28 +1,31 @@
 <script setup lang="ts">
 import { useRouter } from "vue-router";
-import { useAPIStore } from "../store";
+import { useOfflineRoomStore, useRoomStore } from "../store";
 import { shareOfflineRoom } from "../util/offlineRoom";
 
-const API = useAPIStore();
-API.pollRooms();
+const offlineRoomStore = useOfflineRoomStore();
+const roomStore = useRoomStore();
 const router = useRouter();
 
-function handleClick(sessionkey: string) {
-  console.log(sessionkey);
+function handleOnlineRoom(sessionkey: string) {
+  router.push({
+    name: "joinOffline",
+    params: { roomID: sessionkey },
+  });
 }
 function handleOfflineRoom(offlineRoomID: number) {
   router.push({
-    name: "join",
-    params: { offline: "x", roomID: offlineRoomID.toString() },
+    name: "joinOffline",
+    params: { roomID: offlineRoomID.toString() },
   });
 }
 
 function handleOfflineDelete(offlineRoomID: number) {
-  delete API.offlineRooms[offlineRoomID];
+  delete offlineRoomStore.offlineRooms[offlineRoomID];
 }
 
 function handleOfflineShare(offlineRoomID: number) {
-  alert(shareOfflineRoom(API.offlineRooms[offlineRoomID]));
+  alert(shareOfflineRoom(offlineRoomStore.offlineRooms[offlineRoomID]));
 }
 </script>
 <template>
@@ -32,7 +35,9 @@ function handleOfflineShare(offlineRoomID: number) {
     </RouterLink>
     <div class="offlineRoomBox">
       <div
-        v-for="[offlineRoomID, offlineRoom] in Object.entries(API.offlineRooms)"
+        v-for="[offlineRoomID, offlineRoom] in Object.entries(
+          offlineRoomStore.offlineRooms
+        )"
         :key="offlineRoomID"
         :class="{ offlineRoom: true, owned: offlineRoom.owned }"
       >
@@ -55,11 +60,11 @@ function handleOfflineShare(offlineRoomID: number) {
       </div>
     </div>
     <div
-      v-for="{ sessionkey, created } in API.rooms"
+      v-for="[sessionkey, usertoken] in Object.entries(roomStore.rooms)"
       :key="sessionkey"
-      @click="handleClick(sessionkey)"
+      @click="handleOnlineRoom(sessionkey)"
     >
-      {{ created }}: {{ sessionkey }}
+      {{ sessionkey }}
     </div>
   </div>
 </template>

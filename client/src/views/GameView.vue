@@ -2,7 +2,7 @@
 import GameBoard from "../components/GameBoard.vue";
 import BoardSettings from "../components/BoardSettings.vue";
 
-import { GameRole, useAPIStore } from "../store";
+import { GameRole, useOfflineRoomStore } from "../store";
 import { nextState } from "../util/util";
 import { computed, ref } from "vue";
 
@@ -11,7 +11,7 @@ const props = defineProps<{
   roomID: string;
   role: GameRole;
 }>();
-const apiStore = useAPIStore();
+const apiStore = useOfflineRoomStore();
 const gameinfo = computed(() => {
   if (props.offline) {
     const room = apiStore.offlineRooms[parseInt(props.roomID)];
