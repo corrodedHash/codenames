@@ -32,6 +32,18 @@ const routes: RouteRecordRaw[] = [
     },
   },
   {
+    path: `/play/o/:roomID/:role`,
+    name: "playOnline",
+    component: GameView,
+    props: (route) => {
+      return {
+        role: route.params.role,
+        roomID: handleRoomID(route),
+        offline: false,
+      };
+    },
+  },
+  {
     path: `/join/x/:roomID`,
     name: "joinOffline",
     component: RoomJoin,
@@ -39,7 +51,7 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: `/join/o/:roomID`,
-    name: "joinOnfline",
+    name: "joinOnline",
     component: RoomJoin,
     props: (route) => ({ roomID: handleRoomID(route), offline: false }),
   },

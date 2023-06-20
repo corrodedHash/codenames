@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
-import { useOfflineRoomStore } from "../store";
+import { useOfflineRoomStore, useRoomStore } from "../store";
 import { useRouter } from "vue-router";
 import { OfflineRoom } from "../util/offlineRoom";
 import {
@@ -8,8 +8,10 @@ import {
   generateWords,
   wordlists,
 } from "../wordlistManager";
+import { createRoom } from "../api";
 
-const apiStore = useOfflineRoomStore();
+const offlineRoomStore = useOfflineRoomStore();
+const onlineRoomStore = useRoomStore();
 const router = useRouter();
 
 const offlineMode = ref(false);
@@ -56,7 +58,7 @@ function startOfflineGame() {
           }
         : undefined,
   };
-  const roomID = apiStore.addOfflineRoom(x).toString();
+  const roomID = offlineRoomStore.addOfflineRoom(x).toString();
   router.push({
     name: "joinOffline",
     params: {
@@ -65,7 +67,19 @@ function startOfflineGame() {
   });
 }
 
-function startOnlineGame() {}
+async function startOnlineGame() {
+  const colors = buildColorsFromSeed(colorSeed.value);
+  const words = chosenWords.value;
+
+  const info = await createRoom(words, colors);
+  onlineRoomStore.rooms[info.id] = info.token;
+  router.push({
+    name: "joinOnline",
+    params: {
+      roomID: info.id,
+    },
+  });
+}
 
 function startGame() {
   if (offlineMode.value) {

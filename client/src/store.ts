@@ -17,8 +17,8 @@ export type GameRole = "leader" | "revealer" | "spectator";
 export const useRoomStore = defineStore("rooms", () => {
   const roomStorageKey = "rooms";
 
-  const rooms: Record<string, string> = JSON.parse(
-    localStorage.getItem(roomStorageKey) || "{}"
+  const rooms: Record<string, string> = ref(
+    JSON.parse(localStorage.getItem(roomStorageKey) || "{}")
   );
 
   watch(rooms, (v) => {

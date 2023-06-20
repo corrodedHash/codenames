@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import WordCell from "../components/WordCell.vue";
-import { CardStateString } from "../util";
+import { CardStateString } from "../util/util";
 
 const props = defineProps<{
   words: string[];

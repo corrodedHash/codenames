@@ -168,7 +168,9 @@ def click_room(
 
     if creds.role == RoomRole.SPECTATOR:
         raise HTTPException(status_code=401)
-    room.revealed[cell] = True
+    if not room.revealed[cell]:
+        room.clickState += 1
+        room.revealed[cell] = True
 
 
 @app.get("/role/{roomID}")
