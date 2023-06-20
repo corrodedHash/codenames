@@ -3,8 +3,6 @@ import { defineStore } from "pinia";
 import { ref, watch } from "vue";
 import { OfflineRoom } from "./util/offlineRoom";
 
-// const APIRoot = "/api/";
-
 export const useOptionStore = defineStore("options", {
   state: () => ({
     showVertical: false,
@@ -21,9 +19,14 @@ export const useRoomStore = defineStore("rooms", () => {
     JSON.parse(localStorage.getItem(roomStorageKey) || "{}")
   );
 
-  watch(rooms, (v) => {
-    localStorage.setItem(roomStorageKey, JSON.stringify(v));
-  });
+  watch(
+    rooms,
+    (v) => {
+      console.log(v);
+      localStorage.setItem(roomStorageKey, JSON.stringify(v));
+    },
+    { deep: true }
+  );
 
   return { rooms };
 });

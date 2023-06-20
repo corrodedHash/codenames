@@ -109,7 +109,6 @@ function startGame() {
     ></textarea>
     <div><input type="checkbox" v-model="offlineMode" /> Offline</div>
     <input type="text" v-model.number="colorSeed" />
-    <!-- <router-link to="/play" class="startButton">Start</router-link> -->
     <input
       type="button"
       value="Create"
