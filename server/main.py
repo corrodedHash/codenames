@@ -1,11 +1,12 @@
+import datetime
 import enum
-from typing import Annotated
+import functools
 import typing
+from typing import Annotated, Self
 from uuid import UUID, uuid4
 
-from fastapi import Depends, FastAPI, HTTPException, Header, status
-from pydantic import BaseModel, validator, Field
-import datetime
+from fastapi import Depends, FastAPI, Header, HTTPException, status
+from pydantic import BaseModel, Field, validator
 
 
 class CellColor(str, enum.Enum):
@@ -15,11 +16,16 @@ class CellColor(str, enum.Enum):
     NEUTRAL = "neutral"
 
 
+@functools.total_ordering
 class RoomRole(str, enum.Enum):
     ADMIN = "admin"
     SPYMASTER = "spymaster"
     REVEALER = "revealer"
     SPECTATOR = "spectator"
+
+    def __lt__(self, other: Self):
+        value_map = {"admin": 0, "spymaster": 1, "revealer": 2, "spectator": 3}
+        return value_map[self] > value_map[other]
 
 
 class Room(BaseModel):
@@ -178,10 +184,21 @@ def get_role(roomID: UUID, creds: Annotated[RoomCredentials, Depends()]) -> Room
     return creds.role
 
 
+@app.post("/roomShare/{roomID}/{role}")
+def make_share(
+    roomID: UUID, creds: Annotated[RoomCredentials, Depends()], role: RoomRole
+) -> str:
+    if creds.role < role:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+    new_token = uuid4().hex
+    ROOMS[roomID].participantTokens[new_token] = creds.role
+    return new_token
+
+
 @app.get("/roomUpdates/{roomID}")
 def get_room_updates(
     roomID: UUID,
-    creds: Annotated[RoomCredentials, Depends()],
+    _creds: Annotated[RoomCredentials, Depends()],
 ) -> RoomUpdateStatus:
     room = ROOMS[roomID]
     return RoomUpdateStatus(clickState=room.clickState, roomState=room.roomState)

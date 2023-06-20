@@ -22,7 +22,6 @@ export const useRoomStore = defineStore("rooms", () => {
   watch(
     rooms,
     (v) => {
-      console.log(v);
       localStorage.setItem(roomStorageKey, JSON.stringify(v));
     },
     { deep: true }

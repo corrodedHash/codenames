@@ -50,12 +50,26 @@ export async function heartBeat(
   return await response.json();
 }
 
+export type RoomRole = "admin" | "spymaster" | "revealer" | "spectator";
+
 export async function getRoomRole(
   roomID: string,
   token: string
-): Promise<"admin" | "spymaster" | "revealer" | "spectator"> {
+): Promise<RoomRole> {
   const response = await fetch(API_ENDPOINT + `role/${roomID}`, {
     method: "GET",
+    headers: { Authorization: token },
+  });
+  return await response.json();
+}
+
+export async function makeShare(
+  roomID: string,
+  token: string,
+  role: RoomRole
+): Promise<string> {
+  const response = await fetch(API_ENDPOINT + `roomShare/${roomID}/${role}`, {
+    method: "POST",
     headers: { Authorization: token },
   });
   return await response.json();
