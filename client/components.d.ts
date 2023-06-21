@@ -16,6 +16,7 @@ declare module 'vue' {
     IMdiTrashCanOutline: typeof import('~icons/mdi/trash-can-outline')['default']
     OfflineRoomList: typeof import('./src/components/OfflineRoomList.vue')['default']
     OnlineRoomList: typeof import('./src/components/OnlineRoomList.vue')['default']
+    RoomElement: typeof import('./src/components/RoomElement.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     WordCell: typeof import('./src/components/WordCell.vue')['default']

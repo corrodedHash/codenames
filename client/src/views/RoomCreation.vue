@@ -8,11 +8,13 @@ import {
   generateWords,
   wordlists,
 } from "../wordlistManager";
-import { createRoom } from "../api";
+import { changeRoom, createRoom } from "../api";
 
 const offlineRoomStore = useOfflineRoomStore();
 const onlineRoomStore = useRoomStore();
 const router = useRouter();
+
+const props = defineProps<{ recreate?: string }>();
 
 const offlineMode = ref(false);
 const chosenWords = ref([] as string[]);
@@ -71,12 +73,24 @@ async function startOnlineGame() {
   const colors = buildColorsFromSeed(colorSeed.value);
   const words = chosenWords.value;
 
-  const info = await createRoom(words, colors);
-  onlineRoomStore.rooms[info.id] = info.token;
+  let roomID = undefined as undefined | string;
+  if (props.recreate === undefined) {
+    const info = await createRoom(words, colors);
+    onlineRoomStore.rooms[info.id] = info.token;
+    roomID = info.id;
+  } else {
+    await changeRoom(
+      props.recreate,
+      onlineRoomStore.rooms[props.recreate],
+      words,
+      colors
+    );
+    roomID = props.recreate;
+  }
   router.push({
     name: "joinOnline",
     params: {
-      roomID: info.id,
+      roomID,
     },
   });
 }

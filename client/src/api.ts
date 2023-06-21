@@ -27,6 +27,18 @@ export async function createRoom(
   });
   return await response.json();
 }
+export async function changeRoom(
+  roomID: string,
+  token: string,
+  words: string[],
+  colors: CardStateString[]
+) {
+  await fetch(API_ENDPOINT + "room/" + roomID, {
+    method: "PATCH",
+    body: JSON.stringify({ words, colors }),
+    headers: { "Content-Type": "application/json", Authorization: token },
+  });
+}
 
 export async function clickCell(roomID: string, cellID: number, token: string) {
   await fetch(API_ENDPOINT + `room/${roomID}/${cellID}`, {

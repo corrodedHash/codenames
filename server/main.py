@@ -125,6 +125,7 @@ def change_room(
     room = ROOMS[roomID]
     room.words = params.words
     room.colors = params.colors
+    room.revealed = [False] * 25
     room.roomState += 1
 
 

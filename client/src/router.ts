@@ -19,7 +19,14 @@ function handleRoomID(route: RouteLocationNormalized) {
 }
 
 const routes: RouteRecordRaw[] = [
-  { path: "/create", component: RoomCreation },
+  {
+    path: "/create",
+    name: "create",
+    component: RoomCreation,
+    props: (route) => ({
+      recreate: route.query["s"],
+    }),
+  },
   {
     path: `/play/x/:roomID/:role`,
     name: "playOffline",

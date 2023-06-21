@@ -17,6 +17,7 @@ interface RoomInfo {
   colors: (CardStateString | undefined)[];
   readAccess: boolean;
   writeAccess: boolean;
+  isAdmin: boolean;
   roomID: string;
 }
 
@@ -30,6 +31,7 @@ watchEffect(() => {
       readAccess: room.owned,
       writeAccess: room.owned,
       roomID: props.roomID,
+      isAdmin: true,
     };
   } else {
     roomInfo.value = undefined;
@@ -48,6 +50,7 @@ watchEffect(() => {
         readAccess: ["admin", "spymaster"].includes(r),
         writeAccess: ["admin", "spymaster", "revealer"].includes(r),
         roomID: props.roomID,
+        isAdmin: r === "admin",
       };
     });
   }
@@ -72,6 +75,13 @@ function handleJoin(role: GameRole) {
       },
     });
   }
+}
+function handleRecreate() {
+  if (roomInfo.value === undefined) return;
+  router.push({
+    name: "create",
+    query: { s: roomInfo.value.roomID },
+  });
 }
 </script>
 
@@ -98,6 +108,9 @@ function handleJoin(role: GameRole) {
         <div class="selectionBoxOption" @click="handleJoin('spectator')">
           Spectator
         </div>
+      </div>
+      <div v-if="!props.offline && roomInfo.isAdmin" @click="handleRecreate()">
+        Recreate Room
       </div>
     </div>
   </div>
