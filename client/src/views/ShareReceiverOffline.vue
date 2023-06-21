@@ -5,21 +5,28 @@ import { OfflineRoom, offlineRoomFromJSON } from "../util/offlineRoom";
 import { useOfflineRoomStore } from "../store";
 import { ref } from "vue";
 const props = defineProps<{ shareinfo: string }>();
-const apiStore = useOfflineRoomStore();
+const offlineRoomStore = useOfflineRoomStore();
 const sharedRoom = ref(undefined as undefined | OfflineRoom);
+const roomDescription = ref(undefined as undefined | string);
 const router = useRouter();
 watch(
   () => props.shareinfo,
-  async (r) => {
-    const room = await offlineRoomFromJSON(atob(r));
+  async (shareinfo) => {
+    sharedRoom.value = undefined;
+    roomDescription.value = undefined;
+    const room = await offlineRoomFromJSON(atob(shareinfo));
     sharedRoom.value = room;
+    roomDescription.value = sharedRoom.value.words
+      .slice(0, 3)
+      .join("")
+      .replace(" ", "");
   },
   { immediate: true }
 );
 
 function handleClick() {
   if (sharedRoom.value === undefined) return;
-  const roomID = apiStore.addOfflineRoom(sharedRoom.value).toString();
+  const roomID = offlineRoomStore.addOfflineRoom(sharedRoom.value).toString();
   router.push({
     name: "joinOffline",
     params: {
@@ -30,9 +37,9 @@ function handleClick() {
 </script>
 <template>
   <div>
-    <span v-if="sharedRoom === undefined">Loading</span>
+    <span v-if="roomDescription === undefined">Loading</span>
     <span v-else>
-      {{ sharedRoom.words }}
+      {{ roomDescription }}
       <div @click="handleClick">Go</div>
     </span>
   </div>

@@ -4,6 +4,7 @@ import { useRoomStore } from "../store";
 import { ref } from "vue";
 import { watch } from "vue";
 import { RoomRole, getRoomRole, makeShare } from "../api";
+import { toAbsoluteURL } from "../url";
 const roomStore = useRoomStore();
 const router = useRouter();
 
@@ -17,8 +18,13 @@ function handleDelete(roomID: string) {
   delete roomStore.rooms[roomID];
 }
 function handleShare(roomID: string, role: RoomRole) {
-  makeShare(roomID, roomStore.rooms[roomID], role).then((v) => {
-    alert(v);
+  makeShare(roomID, roomStore.rooms[roomID], role).then((usertoken) => {
+    const shareRoute = router.resolve({
+      name: "shareReceiveOnline",
+      params: { roomID, usertoken },
+    });
+    const shareURL = toAbsoluteURL(shareRoute.href);
+    alert(shareURL);
   });
 }
 
@@ -48,10 +54,7 @@ watch(shareToggle, (s) => {
 });
 </script>
 <template>
-  <div
-    v-for="[sessionkey, usertoken] in Object.entries(roomStore.rooms)"
-    :key="sessionkey"
-  >
+  <div v-for="sessionkey in Object.keys(roomStore.rooms)" :key="sessionkey">
     <span @click="handleJoin(sessionkey)">
       {{ sessionkey }}
     </span>

@@ -1,12 +1,6 @@
 <script setup lang="ts">
 import OfflineRoomList from "../components/OfflineRoomList.vue";
 import OnlineRoomList from "../components/OnlineRoomList.vue";
-import { useRouter } from "vue-router";
-
-const router = useRouter();
-console.log(
-  router.resolve({ name: "shareReceiveOffline", params: { shareinfo: "abc" } })
-);
 </script>
 <template>
   <div class="listBox">

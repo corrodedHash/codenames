@@ -191,7 +191,7 @@ def make_share(
     if creds.role < role:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
     new_token = uuid4().hex
-    ROOMS[roomID].participantTokens[new_token] = creds.role
+    ROOMS[roomID].participantTokens[new_token] = role
     return new_token
 
 
