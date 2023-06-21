@@ -2,6 +2,7 @@
 import { useRouter } from "vue-router";
 import { useOfflineRoomStore } from "../store";
 import { shareOfflineRoom } from "../util/offlineRoom";
+import { toAbsoluteURL } from "../url";
 
 const router = useRouter();
 
@@ -18,7 +19,14 @@ function handleOfflineDelete(offlineRoomID: number) {
 }
 
 function handleOfflineShare(offlineRoomID: number) {
-  alert(shareOfflineRoom(offlineRoomStore.offlineRooms[offlineRoomID]));
+  const shareinfo = shareOfflineRoom(
+    offlineRoomStore.offlineRooms[offlineRoomID]
+  );
+  const path = router.resolve({
+    name: "shareReceiveOffline",
+    params: { shareinfo },
+  });
+  alert(toAbsoluteURL(path.href));
 }
 </script>
 <template>
