@@ -11,7 +11,7 @@ export default defineConfig({
     Icons({}),
     Components({ dts: true, resolvers: [IconsResolver()] }),
   ],
-  base: "./",
+  base: "/",
   server: {
     proxy: {
       "/api": {

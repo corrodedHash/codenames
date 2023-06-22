@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useOptionStore } from "../store";
-import { CardStateString } from "../util";
+import { CardStateString } from "../util/util";
 const props = defineProps<{
   word: string;
   color?: CardStateString;
