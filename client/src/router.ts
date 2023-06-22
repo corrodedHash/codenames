@@ -4,12 +4,13 @@ import {
   createRouter,
   createWebHashHistory,
 } from "vue-router";
-import GameView from "./views/GameView.vue";
 import RoomCreation from "./views/RoomCreation.vue";
 import RoomList from "./views/RoomList.vue";
 import RoomJoin from "./views/RoomJoin.vue";
 import ShareReceiverOnline from "./views/ShareReceiverOnline.vue";
 import ShareReceiverOffline from "./views/ShareReceiverOffline.vue";
+import GameViewOffline from "./views/GameViewOffline.vue";
+import GameViewOnline from "./views/GameViewOnline.vue";
 
 function handleRoomID(route: RouteLocationNormalized) {
   const roomID = route.params.roomID;
@@ -30,24 +31,22 @@ const routes: RouteRecordRaw[] = [
   {
     path: `/play/x/:roomID/:role`,
     name: "playOffline",
-    component: GameView,
+    component: GameViewOffline,
     props: (route) => {
       return {
         role: route.params.role,
         roomID: handleRoomID(route),
-        offline: true,
       };
     },
   },
   {
     path: `/play/o/:roomID/:role`,
     name: "playOnline",
-    component: GameView,
+    component: GameViewOnline,
     props: (route) => {
       return {
         role: route.params.role,
         roomID: handleRoomID(route),
-        offline: false,
       };
     },
   },

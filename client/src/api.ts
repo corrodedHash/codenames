@@ -86,3 +86,24 @@ export async function makeShare(
   });
   return await response.json();
 }
+
+export async function subscribe(
+  roomID: string,
+  token: string
+): Promise<WebSocket> {
+  const ws_protocol = location.protocol === "http:" ? "ws" : "wss";
+  // const ws_protocol = "wss";
+  const ws = new WebSocket(
+    ws_protocol +
+      "://" +
+      location.host +
+      API_ENDPOINT +
+      `roomSubscription/${roomID}`
+  );
+  const open_promise = new Promise((resolve) => {
+    ws.onopen = () => resolve(ws);
+  });
+  await open_promise;
+  ws.send(token);
+  return ws;
+}

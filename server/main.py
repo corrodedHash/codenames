@@ -1,3 +1,4 @@
+import asyncio
 import datetime
 import enum
 import functools
@@ -5,7 +6,17 @@ import typing
 from typing import Annotated, Self
 from uuid import UUID, uuid4
 
-from fastapi import Depends, FastAPI, Header, HTTPException, status
+from fastapi import (
+    BackgroundTasks,
+    Depends,
+    FastAPI,
+    Header,
+    HTTPException,
+    WebSocket,
+    WebSocketDisconnect,
+    WebSocketException,
+    status,
+)
 from pydantic import BaseModel, Field, validator
 
 
@@ -28,13 +39,21 @@ class RoomRole(str, enum.Enum):
         return value_map[self] > value_map[other]
 
 
+class Participant(BaseModel):
+    role: RoomRole
+    sockets: list[WebSocket] = Field(default_factory=list)
+
+    class Config:
+        arbitrary_types_allowed = True
+
+
 class Room(BaseModel):
     words: list[str]
     colors: list[CellColor]
     revealed: list[bool] = Field(default_factory=lambda: [False] * 25)
     clickState: int = 0
     roomState: int = 0
-    participantTokens: dict[str, RoomRole] = Field(default_factory=dict)
+    participantTokens: dict[str, Participant] = Field(default_factory=dict)
     creation: datetime.datetime = Field(default_factory=datetime.datetime.now)
 
 
@@ -98,7 +117,7 @@ def create_room(params: RoomCreationParams) -> RoomCreationResponse:
     ROOMS[roomID] = Room(
         words=params.words,
         colors=params.colors,
-        participantTokens={admintoken: RoomRole.ADMIN},
+        participantTokens={admintoken: Participant(role=RoomRole.ADMIN)},
     )
     return RoomCreationResponse(id=roomID, token=admintoken)
 
@@ -110,8 +129,13 @@ class RoomCredentials:
         access_forbidden_exception = HTTPException(status_code=401)
         if token not in room.participantTokens:
             raise access_forbidden_exception
-        self.isAdmin = room.participantTokens[token] == RoomRole.ADMIN
-        self.role = room.participantTokens[token]
+        self.token = token
+        self.roomID = roomID
+        self.role = room.participantTokens[token].role
+
+    @property
+    def isAdmin(self) -> bool:
+        return self.role == RoomRole.ADMIN
 
 
 @app.patch("/room/{roomID}")
@@ -119,6 +143,7 @@ def change_room(
     roomID: UUID,
     params: RoomCreationParams,
     creds: Annotated[RoomCredentials, Depends()],
+    background_tasks: BackgroundTasks,
 ) -> None:
     if not creds.isAdmin:
         raise HTTPException(status_code=401)
@@ -127,6 +152,7 @@ def change_room(
     room.colors = params.colors
     room.revealed = [False] * 25
     room.roomState += 1
+    background_tasks.add_task(notify_participants, roomID)
 
 
 @app.delete("/room/{roomID}")
@@ -167,9 +193,18 @@ def get_room(
     )
 
 
+async def notify_participants(roomID: UUID):
+    todo = (s for y in ROOMS[roomID].participantTokens.values() for s in y.sockets)
+    sendings = [t.send_bytes(b"G") for t in todo]
+    await asyncio.gather(*sendings)
+
+
 @app.put("/room/{roomID}/{cell}")
 def click_room(
-    roomID: UUID, cell: int, creds: Annotated[RoomCredentials, Depends()]
+    roomID: UUID,
+    cell: int,
+    creds: Annotated[RoomCredentials, Depends()],
+    background_tasks: BackgroundTasks,
 ) -> None:
     room = ROOMS[roomID]
 
@@ -178,10 +213,11 @@ def click_room(
     if not room.revealed[cell]:
         room.clickState += 1
         room.revealed[cell] = True
+        background_tasks.add_task(notify_participants, roomID)
 
 
 @app.get("/role/{roomID}")
-def get_role(roomID: UUID, creds: Annotated[RoomCredentials, Depends()]) -> RoomRole:
+def get_role(creds: Annotated[RoomCredentials, Depends()]) -> RoomRole:
     return creds.role
 
 
@@ -192,8 +228,26 @@ def make_share(
     if creds.role < role:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
     new_token = uuid4().hex
-    ROOMS[roomID].participantTokens[new_token] = role
+    ROOMS[roomID].participantTokens[new_token] = Participant(role=role)
     return new_token
+
+
+@app.websocket("/roomSubscription/{roomID}")
+async def subscribe_room(websocket: WebSocket, roomID: UUID):
+    print("hi" + roomID.hex)
+    await websocket.accept()
+    room = ROOMS[roomID]
+    token = await websocket.receive_text()
+    if token not in room.participantTokens:
+        raise WebSocketException(
+            code=status.WS_1008_POLICY_VIOLATION, reason="Unauthorized"
+        )
+    ROOMS[roomID].participantTokens[token].sockets.append(websocket)
+    try:
+        while True:
+            await websocket.receive_bytes()
+    except WebSocketDisconnect:
+        ROOMS[roomID].participantTokens[token].sockets.remove(websocket)
 
 
 @app.get("/roomUpdates/{roomID}")
