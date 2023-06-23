@@ -37,11 +37,11 @@ watchEffect(() => {
     roomInfo.value = undefined;
     const fetchRoomInfo = getRoomInfo(
       props.roomID,
-      roomStore.rooms[props.roomID]
+      roomStore.rooms[props.roomID].sessiontoken
     );
     const fetchRoomRole = getRoomRole(
       props.roomID,
-      roomStore.rooms[props.roomID]
+      roomStore.rooms[props.roomID].sessiontoken
     );
     Promise.all([fetchRoomInfo, fetchRoomRole]).then(([v, r]) => {
       roomInfo.value = {

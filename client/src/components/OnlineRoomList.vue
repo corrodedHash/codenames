@@ -5,8 +5,13 @@ import { ref } from "vue";
 import { watch } from "vue";
 import { RoomRole, getRoomRole, makeShare } from "../api";
 import { toAbsoluteURL } from "../url";
+import { onMounted } from "vue";
 const roomStore = useRoomStore();
 const router = useRouter();
+
+onMounted(() => {
+  roomStore.refreshRooms();
+});
 
 function handleJoin(sessionkey: string) {
   router.push({
@@ -18,14 +23,16 @@ function handleDelete(roomID: string) {
   delete roomStore.rooms[roomID];
 }
 function handleShare(roomID: string, role: RoomRole) {
-  makeShare(roomID, roomStore.rooms[roomID], role).then((usertoken) => {
-    const shareRoute = router.resolve({
-      name: "shareReceiveOnline",
-      params: { roomID, usertoken },
-    });
-    const shareURL = toAbsoluteURL(shareRoute.href);
-    alert(shareURL);
-  });
+  makeShare(roomID, roomStore.rooms[roomID].sessiontoken, role).then(
+    (usertoken) => {
+      const shareRoute = router.resolve({
+        name: "shareReceiveOnline",
+        params: { roomID, usertoken },
+      });
+      const shareURL = toAbsoluteURL(shareRoute.href);
+      alert(shareURL);
+    }
+  );
 }
 
 const shareToggle = ref(undefined as undefined | string);
@@ -35,7 +42,7 @@ watch(shareToggle, (s) => {
     shareOptions.value = undefined;
     return;
   }
-  getRoomRole(s, roomStore.rooms[s]).then((v: RoomRole) => {
+  getRoomRole(s, roomStore.rooms[s].sessiontoken).then((v: RoomRole) => {
     switch (v) {
       case "admin":
         shareOptions.value = ["spectator", "revealer", "spymaster", "admin"];
@@ -54,9 +61,12 @@ watch(shareToggle, (s) => {
 });
 </script>
 <template>
-  <div v-for="sessionkey in Object.keys(roomStore.rooms)" :key="sessionkey">
+  <div
+    v-for="[sessionkey, room] in Object.entries(roomStore.rooms)"
+    :key="sessionkey"
+  >
     <span @click="handleJoin(sessionkey)">
-      {{ sessionkey }}
+      {{ room.shortname ?? sessionkey }}
     </span>
     <span class="optionBox">
       <i-mdi-delete-outline

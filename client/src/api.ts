@@ -13,6 +13,7 @@ export async function getRoomInfo(
   const response = await fetch(API_ENDPOINT + `room/${roomID}`, {
     headers: { Authorization: token },
   });
+  if (!response.ok) throw new Error("Response status not okay");
   return await response.json();
 }
 

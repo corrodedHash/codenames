@@ -76,12 +76,12 @@ async function startOnlineGame() {
   let roomID = undefined as undefined | string;
   if (props.recreate === undefined) {
     const info = await createRoom(words, colors);
-    onlineRoomStore.rooms[info.id] = info.token;
+    onlineRoomStore.rooms[info.id] = { sessiontoken: info.token };
     roomID = info.id;
   } else {
     await changeRoom(
       props.recreate,
-      onlineRoomStore.rooms[props.recreate],
+      onlineRoomStore.rooms[props.recreate].sessiontoken,
       words,
       colors
     );

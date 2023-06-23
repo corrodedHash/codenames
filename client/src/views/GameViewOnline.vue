@@ -26,21 +26,23 @@ const gameinfo = ref(
 let w = undefined as undefined | WebSocket;
 
 function updateOnlineRoom() {
-  getRoomInfo(props.roomID, roomStore.rooms[props.roomID]).then((v) => {
-    gameinfo.value = {
-      colors: v.colors,
-      words: v.words,
-      revealed: v.revealed,
-    };
-  });
+  getRoomInfo(props.roomID, roomStore.rooms[props.roomID].sessiontoken).then(
+    (v) => {
+      gameinfo.value = {
+        colors: v.colors,
+        words: v.words,
+        revealed: v.revealed,
+      };
+    }
+  );
 }
 
 watch(
-  () => [props.role, props.roomID] as const,
-  async ([_role, roomID]) => {
+  () => ({ role: props.role, roomID: props.roomID }),
+  async ({ roomID }) => {
     updateOnlineRoom();
     w?.close();
-    w = await subscribe(roomID, roomStore.rooms[roomID]);
+    w = await subscribe(roomID, roomStore.rooms[roomID].sessiontoken);
     w.onmessage = updateOnlineRoom;
   },
   { immediate: true }
@@ -53,7 +55,11 @@ function handleCellClick(index: number) {
   switch (props.role) {
     case "leader":
     case "revealer":
-      clickCell(props.roomID, index, roomStore.rooms[props.roomID]).then(() => {
+      clickCell(
+        props.roomID,
+        index,
+        roomStore.rooms[props.roomID].sessiontoken
+      ).then(() => {
         updateOnlineRoom();
       });
       break;
