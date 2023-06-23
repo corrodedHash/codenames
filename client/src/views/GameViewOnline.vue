@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import GameBoard from "../components/GameBoard.vue";
-import BoardSettings from "../components/BoardSettings.vue";
 
 import { GameRole, useRoomStore } from "../store";
 import { CardStateString } from "../util/util";
@@ -67,16 +66,9 @@ function handleCellClick(index: number) {
       break;
   }
 }
-const showSettings = ref(false);
 </script>
 <template>
   <div class="game-box">
-    <div class="settings-button" @click="showSettings = !showSettings">
-      Settings
-    </div>
-    <div v-if="showSettings" class="settings-modal">
-      <BoardSettings />
-    </div>
     <GameBoard
       v-if="gameinfo !== undefined"
       :words="gameinfo.words"

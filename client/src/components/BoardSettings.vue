@@ -6,11 +6,11 @@ const optionStore = useOptionStore();
   <div>
     <div>
       <input type="checkbox" v-model="optionStore.showVertical" />
-      <span> Vertical: </span>
+      <span> Vertical </span>
     </div>
     <div>
       <input type="checkbox" v-model="optionStore.showMirrored" />
-      <span> Horizontal: </span>
+      <span> Horizontal </span>
     </div>
   </div>
 </template>

@@ -99,10 +99,11 @@ function handleRecreate() {
           Spectator
         </div>
       </div>
-      <div v-if="!props.offline && roomInfo.isAdmin" @click="handleRecreate()">
-        Recreate Room
-      </div>
     </div>
+    <div v-if="!props.offline && roomInfo.isAdmin" @click="handleRecreate()">
+      Recreate Room
+    </div>
+    <BoardSettings />
   </div>
 </template>
 <style scoped>
