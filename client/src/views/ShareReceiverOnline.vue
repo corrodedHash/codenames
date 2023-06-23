@@ -25,7 +25,7 @@ watch(
 
 function handleClick() {
   if (roomDescription.value === undefined) return;
-  roomStore.rooms[props.roomID] = props.usertoken;
+  roomStore.rooms[props.roomID] = { sessiontoken: props.usertoken };
   router.push({ name: "joinOnline", params: { roomID: props.roomID } });
 }
 </script>
