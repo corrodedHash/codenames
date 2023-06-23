@@ -58,23 +58,13 @@ watchEffect(() => {
 
 function handleJoin(role: GameRole) {
   if (roomInfo.value === undefined) throw Error("Room info is undefined");
-  if (props.offline) {
-    router.push({
-      name: "playOffline",
-      params: {
-        roomID: roomInfo.value.roomID,
-        role,
-      },
-    });
-  } else {
-    router.push({
-      name: "playOnline",
-      params: {
-        roomID: roomInfo.value.roomID,
-        role,
-      },
-    });
-  }
+  router.push({
+    name: props.offline ? "playOffline" : "playOnline",
+    params: {
+      roomID: roomInfo.value.roomID,
+      role,
+    },
+  });
 }
 function handleRecreate() {
   if (roomInfo.value === undefined) return;
