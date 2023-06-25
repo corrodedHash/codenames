@@ -10,6 +10,7 @@ declare module 'vue' {
     BoardSettings: typeof import('./src/components/BoardSettings.vue')['default']
     GameBoard: typeof import('./src/components/GameBoard.vue')['default']
     IMdiDeleteOutline: typeof import('~icons/mdi/delete-outline')['default']
+    IMdiDiceMultiple: typeof import('~icons/mdi/dice-multiple')['default']
     IMdiPlusBox: typeof import('~icons/mdi/plus-box')['default']
     IMdiShareVariantOutline: typeof import('~icons/mdi/share-variant-outline')['default']
     OfflineRoomList: typeof import('./src/components/OfflineRoomList.vue')['default']
