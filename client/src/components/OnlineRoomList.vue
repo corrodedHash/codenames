@@ -3,9 +3,10 @@ import { useRouter } from "vue-router";
 import { useRoomStore } from "../store";
 import { ref } from "vue";
 import { watch } from "vue";
-import { RoomRole, getRoomRole, makeShare } from "../api";
+import { getRoomRole, makeShare } from "../api";
 import { toAbsoluteURL } from "../url";
 import { onMounted } from "vue";
+import { RoomRole, leqRoomRoles } from "../util/roomInfo";
 const roomStore = useRoomStore();
 const router = useRouter();
 
@@ -43,20 +44,7 @@ watch(shareToggle, (s) => {
     return;
   }
   getRoomRole(s, roomStore.rooms[s].sessiontoken).then((v: RoomRole) => {
-    switch (v) {
-      case "admin":
-        shareOptions.value = ["spectator", "revealer", "spymaster", "admin"];
-        break;
-      case "spymaster":
-        shareOptions.value = ["spectator", "revealer", "spymaster"];
-        break;
-      case "revealer":
-        shareOptions.value = ["spectator", "revealer"];
-        break;
-      case "spectator":
-        shareOptions.value = ["spectator"];
-        break;
-    }
+    shareOptions.value = leqRoomRoles(v);
   });
 });
 </script>

@@ -1,3 +1,4 @@
+import { RoomRole } from "./util/roomInfo";
 import { CardStateString } from "./util/util";
 
 const API_ENDPOINT = "/api/";
@@ -62,8 +63,6 @@ export async function heartBeat(
   });
   return await response.json();
 }
-
-export type RoomRole = "admin" | "spymaster" | "revealer" | "spectator";
 
 export async function getRoomRole(
   roomID: string,

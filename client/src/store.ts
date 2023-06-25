@@ -2,8 +2,9 @@ import { defineStore } from "pinia";
 
 import { ref, watch } from "vue";
 import { OfflineRoom } from "./util/offlineRoom";
-import { RoomRole, getRoomInfo } from "./api";
+import { getRoomInfo } from "./api";
 import { notUndefined } from "./util/util";
+import { RoomRole } from "./util/roomInfo";
 
 export const useOptionStore = defineStore("options", {
   state: () => ({

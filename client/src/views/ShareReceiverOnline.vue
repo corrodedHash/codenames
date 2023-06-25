@@ -3,7 +3,8 @@ import { useRouter } from "vue-router";
 import { watch } from "vue";
 import { useRoomStore } from "../store";
 import { ref } from "vue";
-import { RoomRole, getRoomInfo, getRoomRole } from "../api";
+import { getRoomInfo, getRoomRole } from "../api";
+import { RoomRole } from "../util/roomInfo";
 const props = defineProps<{ roomID: string; usertoken: string }>();
 const roomStore = useRoomStore();
 

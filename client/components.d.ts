@@ -16,6 +16,7 @@ declare module 'vue' {
     OnlineRoomList: typeof import('./src/components/OnlineRoomList.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    ShareBox: typeof import('./src/components/ShareBox.vue')['default']
     WordCell: typeof import('./src/components/WordCell.vue')['default']
   }
 }
