@@ -2,10 +2,10 @@
 import { useRouter } from "vue-router";
 import { GameRole, useOfflineRoomStore, useRoomStore } from "../store";
 import { watchEffect, ref } from "vue";
-import { getRoomInfo, getRoomRole, makeShare } from "../api";
+import { getRoomInfo, getRoomRole } from "../api";
 import { RoomRole } from "../util/roomInfo";
 import { CardStateString } from "../util/util";
-import { toAbsoluteURL } from "../url";
+
 const router = useRouter();
 const apiStore = useOfflineRoomStore();
 const roomStore = useRoomStore();
@@ -21,6 +21,7 @@ interface RoomInfo {
   writeAccess: boolean;
   isAdmin: boolean;
   roomID: string;
+  role: RoomRole;
 }
 
 async function getOnlineRoom(): Promise<RoomInfo> {
@@ -40,6 +41,7 @@ async function getOnlineRoom(): Promise<RoomInfo> {
     writeAccess: ["admin", "spymaster", "revealer"].includes(r),
     roomID: props.roomID,
     isAdmin: r === "admin",
+    role: r,
   };
 }
 
@@ -59,6 +61,7 @@ watchEffect(() => {
     writeAccess: room.owned,
     roomID: props.roomID,
     isAdmin: true,
+    role: "admin",
   };
 });
 
@@ -80,35 +83,12 @@ function handleRecreate() {
     query: { s: roomInfo.value.roomID },
   });
 }
-
-async function handleShare(role: RoomRole) {
-  const usertoken = await makeShare(
-    props.roomID,
-    roomStore.rooms[props.roomID].sessiontoken,
-    role
-  );
-
-  const shareRoute = router.resolve({
-    name: "shareReceiveOnline",
-    params: { roomID: props.roomID, usertoken },
-  });
-  const shareURL = toAbsoluteURL(shareRoute.href);
-  alert(shareURL);
-}
-
-const shareURL = ref(undefined as undefined | string);
 </script>
 
 <template>
   <div class="box" v-if="roomInfo !== undefined">
     <span class="titleBox">{{ roomInfo.words.slice(0, 3).join("") }}</span>
-    <div class="shareBox">
-      <i-mdi-share-variant-outline
-        class="hoverEvent"
-        @click="shareToggle = sessionkey"
-      />
-      <div v-if="shareURL !== undefined">{{ shareURL }}</div>
-    </div>
+    <ShareBox :roomID="props.roomID" :role="roomInfo.role" />
     <div class="selectionBox">
       <div class="selectionBoxTitle">Join as</div>
       <div class="selectionOptionBox">
