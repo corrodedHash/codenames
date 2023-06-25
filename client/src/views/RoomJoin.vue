@@ -21,39 +21,43 @@ interface RoomInfo {
   roomID: string;
 }
 
+async function getOnlineRoom(): Promise<RoomInfo> {
+  const fetchRoomInfo = getRoomInfo(
+    props.roomID,
+    roomStore.rooms[props.roomID].sessiontoken
+  );
+  const fetchRoomRole = getRoomRole(
+    props.roomID,
+    roomStore.rooms[props.roomID].sessiontoken
+  );
+  const [v, r] = await Promise.all([fetchRoomInfo, fetchRoomRole]);
+  return {
+    words: v.words,
+    colors: v.colors,
+    readAccess: ["admin", "spymaster"].includes(r),
+    writeAccess: ["admin", "spymaster", "revealer"].includes(r),
+    roomID: props.roomID,
+    isAdmin: r === "admin",
+  };
+}
+
 watchEffect(() => {
-  if (props.offline) {
-    const room = apiStore.offlineRooms[parseInt(props.roomID)];
-    if (room === undefined) throw Error("Unknown room");
-    roomInfo.value = {
-      words: room.words,
-      colors: room.colors,
-      readAccess: room.owned,
-      writeAccess: room.owned,
-      roomID: props.roomID,
-      isAdmin: true,
-    };
-  } else {
+  if (!props.offline) {
     roomInfo.value = undefined;
-    const fetchRoomInfo = getRoomInfo(
-      props.roomID,
-      roomStore.rooms[props.roomID].sessiontoken
-    );
-    const fetchRoomRole = getRoomRole(
-      props.roomID,
-      roomStore.rooms[props.roomID].sessiontoken
-    );
-    Promise.all([fetchRoomInfo, fetchRoomRole]).then(([v, r]) => {
-      roomInfo.value = {
-        words: v.words,
-        colors: v.colors,
-        readAccess: ["admin", "spymaster"].includes(r),
-        writeAccess: ["admin", "spymaster", "revealer"].includes(r),
-        roomID: props.roomID,
-        isAdmin: r === "admin",
-      };
-    });
+    getOnlineRoom().then((v) => (roomInfo.value = v));
+    return;
   }
+
+  const room = apiStore.offlineRooms[parseInt(props.roomID)];
+  if (room === undefined) throw Error("Unknown room");
+  roomInfo.value = {
+    words: room.words,
+    colors: room.colors,
+    readAccess: room.owned,
+    writeAccess: room.owned,
+    roomID: props.roomID,
+    isAdmin: true,
+  };
 });
 
 function handleJoin(role: GameRole) {
@@ -66,6 +70,7 @@ function handleJoin(role: GameRole) {
     },
   });
 }
+
 function handleRecreate() {
   if (roomInfo.value === undefined) return;
   router.push({
