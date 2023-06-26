@@ -2,7 +2,7 @@ import { defineStore } from "pinia";
 
 import { ref, watch } from "vue";
 import { OfflineRoom } from "./util/offlineRoom";
-import { getRoomInfo } from "./api";
+import { getRoomInfo, getRoomRole } from "./api";
 import { notUndefined } from "./util/util";
 import { RoomRole } from "./util/roomInfo";
 
@@ -41,19 +41,23 @@ export const useRoomStore = defineStore("rooms", () => {
 
   async function refreshRooms() {
     const refreshPromises = Object.entries(rooms.value).map(
-      ([roomID, summary]) =>
-        getRoomInfo(roomID, summary.sessiontoken)
-          .then(
-            (v) =>
-              [
-                roomID,
-                {
-                  sessiontoken: summary.sessiontoken,
-                  shortname: v.words.slice(0, 3).join("").replace(" ", ""),
-                },
-              ] as const
-          )
-          .catch(() => undefined)
+      async ([roomID, summary]) => {
+        const roomInfoPromise = getRoomInfo(roomID, summary.sessiontoken);
+        const roomRolePromise = getRoomRole(roomID, summary.sessiontoken);
+        try {
+          const [i, r] = await Promise.all([roomInfoPromise, roomRolePromise]);
+          return [
+            roomID,
+            {
+              sessiontoken: summary.sessiontoken,
+              shortname: i.words.slice(0, 3).join("").replace(" ", ""),
+              role: r,
+            },
+          ] as const;
+        } catch {
+          return undefined;
+        }
+      }
     );
     const refreshedRooms = await Promise.all(refreshPromises);
     const refreshedRoomObject = refreshedRooms

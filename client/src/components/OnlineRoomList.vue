@@ -3,8 +3,7 @@ import { useRouter } from "vue-router";
 import { useRoomStore } from "../store";
 import { ref } from "vue";
 import { watch } from "vue";
-import { getRoomRole, makeShare } from "../api";
-import { toAbsoluteURL } from "../url";
+import { getRoomRole } from "../api";
 import { onMounted } from "vue";
 import { RoomRole, leqRoomRoles } from "../util/roomInfo";
 const roomStore = useRoomStore();
@@ -22,18 +21,6 @@ function handleJoin(sessionkey: string) {
 }
 function handleDelete(roomID: string) {
   delete roomStore.rooms[roomID];
-}
-function handleShare(roomID: string, role: RoomRole) {
-  makeShare(roomID, roomStore.rooms[roomID].sessiontoken, role).then(
-    (usertoken) => {
-      const shareRoute = router.resolve({
-        name: "shareReceiveOnline",
-        params: { roomID, usertoken },
-      });
-      const shareURL = toAbsoluteURL(shareRoute.href);
-      alert(shareURL);
-    }
-  );
 }
 
 const shareToggle = ref(undefined as undefined | string);
@@ -61,21 +48,8 @@ watch(shareToggle, (s) => {
         class="hoverEvent"
         @click="handleDelete(sessionkey)"
       />
-      <i-mdi-share-variant-outline
-        class="hoverEvent"
-        v-if="shareToggle !== sessionkey"
-        @click="shareToggle = sessionkey"
-      />
-      <div v-if="shareToggle === sessionkey && shareOptions !== undefined">
-        <div @click="shareToggle = undefined">X</div>
-        <div
-          v-for="s in shareOptions"
-          :key="s"
-          @click="handleShare(sessionkey, s)"
-        >
-          {{ s }}
-        </div>
-      </div>
+
+      <share-box :room-i-d="sessionkey" :role="room.role || 'spectator'" />
     </span>
   </div>
 </template>

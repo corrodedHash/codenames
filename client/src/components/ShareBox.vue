@@ -5,15 +5,15 @@ import { RoomRole, leqRoomRoles } from "../util/roomInfo";
 import { toAbsoluteURL } from "../url";
 import { useRoomStore } from "../store";
 import { makeShare } from "../api";
+import { watch } from "vue";
 
 const props = defineProps<{ role: RoomRole; roomID: string }>();
 
-const shareURL = ref(undefined as undefined | string);
 const dialog = ref(false);
 
 const router = useRouter();
 const roomStore = useRoomStore();
-
+const shareURL = ref(undefined as undefined | string);
 async function handleShare(role: RoomRole) {
   const usertoken = await makeShare(
     props.roomID,
@@ -25,9 +25,14 @@ async function handleShare(role: RoomRole) {
     name: "shareReceiveOnline",
     params: { roomID: props.roomID, usertoken },
   });
-  const shareURL = toAbsoluteURL(shareRoute.href);
-  alert(shareURL);
+  shareURL.value = toAbsoluteURL(shareRoute.href);
 }
+
+watch(dialog, (d) => {
+  if (!d) {
+    shareURL.value = undefined;
+  }
+});
 
 const allowedRoles = computed(() => leqRoomRoles(props.role));
 </script>
@@ -40,7 +45,7 @@ const allowedRoles = computed(() => leqRoomRoles(props.role));
           {{ shareURL }}
         </v-card-text>
         <v-card-text v-else>
-          <v-list lines="one">
+          <v-list lines="one" v-if="shareURL === undefined">
             <v-list-item
               v-for="item in allowedRoles"
               :key="item"
@@ -50,13 +55,7 @@ const allowedRoles = computed(() => leqRoomRoles(props.role));
           </v-list>
         </v-card-text>
         <v-card-actions>
-          <v-btn
-            color="primary"
-            block
-            @click="
-              dialog = false;
-              shareURL = undefined;
-            "
+          <v-btn color="primary" block @click="dialog = false"
             >Close Dialog</v-btn
           >
         </v-card-actions>
