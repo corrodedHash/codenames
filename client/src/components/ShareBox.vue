@@ -1,31 +1,22 @@
 <script lang="ts" setup>
 import { computed, ref } from "vue";
-import { useRouter } from "vue-router";
 import { RoomRole, leqRoomRoles } from "../util/roomInfo";
-import { toAbsoluteURL } from "../url";
 import { useRoomStore } from "../store";
-import { makeShare } from "../api";
 import { watch } from "vue";
+import { generateOnlineShareURL } from "../url";
 
 const props = defineProps<{ role: RoomRole; roomID: string }>();
 
 const dialog = ref(false);
 
-const router = useRouter();
 const roomStore = useRoomStore();
 const shareURL = ref(undefined as undefined | string);
 async function handleShare(role: RoomRole) {
-  const usertoken = await makeShare(
+  shareURL.value = await generateOnlineShareURL(
     props.roomID,
     roomStore.rooms[props.roomID].sessiontoken,
     role
   );
-
-  const shareRoute = router.resolve({
-    name: "shareReceiveOnline",
-    params: { roomID: props.roomID, usertoken },
-  });
-  shareURL.value = toAbsoluteURL(shareRoute.href);
 }
 
 watch(dialog, (d) => {
