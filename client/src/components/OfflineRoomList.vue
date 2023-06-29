@@ -46,10 +46,7 @@ function handleOfflineShare(offlineRoomID: number) {
           class="hoverEvent"
           @click="handleOfflineDelete(parseInt(offlineRoomID))"
         />
-        <i-mdi-share-variant-outline
-          class="hoverEvent"
-          @click="handleOfflineShare(parseInt(offlineRoomID))"
-        />
+        <share-box-offline :room-i-d="parseInt(offlineRoomID)" />
       </span>
     </div>
   </div>

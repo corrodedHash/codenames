@@ -18,6 +18,7 @@ declare module 'vue' {
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     ShareBox: typeof import('./src/components/ShareBox.vue')['default']
+    ShareBoxOffline: typeof import('./src/components/ShareBoxOffline.vue')['default']
     WordCell: typeof import('./src/components/WordCell.vue')['default']
   }
 }
