@@ -1,9 +1,8 @@
 <script lang="ts" setup>
-import { computed, ref } from "vue";
-import { RoomRole, leqRoomRoles } from "../util/roomInfo";
-import { useOfflineRoomStore, useRoomStore } from "../store";
+import { ref } from "vue";
+import { useOfflineRoomStore } from "../store";
 import { watch } from "vue";
-import { generateOfflineShareURL, generateOnlineShareURL } from "../url";
+import { generateOfflineShareURL } from "../url";
 
 const props = defineProps<{ roomID: number }>();
 
@@ -13,7 +12,8 @@ const offlineRoomStore = useOfflineRoomStore();
 
 function handleOfflineShare(mode: "complete" | "reduced") {
   const shareString = generateOfflineShareURL(
-    offlineRoomStore.offlineRooms[props.roomID]
+    offlineRoomStore.offlineRooms[props.roomID],
+    mode === "complete"
   );
   shareURL.value = shareString;
 }

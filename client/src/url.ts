@@ -9,8 +9,11 @@ export function toAbsoluteURL(path: string): string {
   }/${path}`;
 }
 
-export function generateOfflineShareURL(room: OfflineRoom): string {
-  const shareinfo = shareOfflineRoom(room);
+export function generateOfflineShareURL(
+  room: OfflineRoom,
+  complete: boolean
+): string {
+  const shareinfo = shareOfflineRoom(room, complete);
   const path = router.resolve({
     name: "shareReceiveOffline",
     params: { shareinfo },

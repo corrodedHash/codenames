@@ -41,7 +41,10 @@ function isSharedOfflineRoom(o: unknown): o is SharedOfflineRoom {
   return true;
 }
 
-function createSharedOfflineRoom(room: OfflineRoom): SharedOfflineRoom {
+function createSharedOfflineRoom(
+  room: OfflineRoom,
+  complete: boolean
+): SharedOfflineRoom {
   const colorseed = room.colorseed;
   const colors =
     room.colorseed === undefined
@@ -49,17 +52,19 @@ function createSharedOfflineRoom(room: OfflineRoom): SharedOfflineRoom {
         ? room.colors
         : undefined
       : undefined;
+  const colorinfo = complete ? { colorseed, colors } : {};
   const words =
     room.wordseed === undefined
       ? { words: room.words }
       : { wordseed: room.wordseed };
-  return { colorseed, colors, ...words };
+  return { ...colorinfo, ...words };
 }
 
-export function shareOfflineRoom(room: OfflineRoom): string {
-  const r = createSharedOfflineRoom(room);
+export function shareOfflineRoom(room: OfflineRoom, complete: boolean): string {
+  const r = createSharedOfflineRoom(room, complete);
   return btoa(JSON.stringify(r, undefined, 0));
 }
+
 export async function offlineRoomFromJSON(json: string): Promise<OfflineRoom> {
   const parsed = JSON.parse(json);
   if (!isSharedOfflineRoom(parsed)) throw Error("Not an offline room");
