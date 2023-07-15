@@ -14,7 +14,7 @@ test("Offline room serialization", async () => {
     revealed: Array(25).fill(false),
   };
 
-  const sharedRoom = shareOfflineRoom(a);
+  const sharedRoom = shareOfflineRoom(a, true);
   console.dir(sharedRoom);
   const rebuiltRoom = await offlineRoomFromJSON(JSON.stringify(sharedRoom));
 

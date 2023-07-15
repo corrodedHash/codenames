@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { useRouter } from "vue-router";
 import { useOfflineRoomStore } from "../store";
-import { shareOfflineRoom } from "../util/offlineRoom";
-import { toAbsoluteURL } from "../url";
 
 const router = useRouter();
 
@@ -16,17 +14,6 @@ function handleOfflineRoom(offlineRoomID: number) {
 
 function handleOfflineDelete(offlineRoomID: number) {
   delete offlineRoomStore.offlineRooms[offlineRoomID];
-}
-
-function handleOfflineShare(offlineRoomID: number) {
-  const shareinfo = shareOfflineRoom(
-    offlineRoomStore.offlineRooms[offlineRoomID]
-  );
-  const path = router.resolve({
-    name: "shareReceiveOffline",
-    params: { shareinfo },
-  });
-  alert(toAbsoluteURL(path.href));
 }
 </script>
 <template>
