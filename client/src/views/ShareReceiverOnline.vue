@@ -31,12 +31,30 @@ function handleClick() {
 }
 </script>
 <template>
-  <div>
-    <span v-if="roomDescription === undefined">Loading</span>
-    <span v-else>
-      {{ roomDescription }}
-      {{ roomRole }}
-      <div @click="handleClick">Go</div>
-    </span>
-  </div>
+  <v-app id="inspire">
+    <v-main class="bg-grey-lighten-3">
+      <v-container>
+        <v-sheet
+          min-height="70vh"
+          rounded="lg"
+          class="align-center d-flex flex-column justify-center"
+        >
+          <v-card width="80%" v-if="roomDescription === undefined">
+            <v-card-text>Loading</v-card-text>
+          </v-card>
+          <v-card v-else>
+            <v-card-title>
+              {{ roomDescription }}
+            </v-card-title>
+            <v-card-text>
+              {{ roomRole }}
+            </v-card-text>
+            <v-card-actions>
+              <v-btn @click="handleClick">Go</v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-sheet>
+      </v-container>
+    </v-main>
+  </v-app>
 </template>
