@@ -40,7 +40,11 @@ function shortName(words: Array<string>): string {
 
       <template v-slot:append>
         <div class="pl-2">
-          <v-btn @click="handleOfflineDelete(parseInt(offlineRoomID))">
+          <v-btn
+            @click="handleOfflineDelete(parseInt(offlineRoomID))"
+            :icon="true"
+            size="small"
+          >
             <i-mdi-delete-outline class="hoverEvent" />
           </v-btn>
           <share-box-offline :room-i-d="parseInt(offlineRoomID)" />

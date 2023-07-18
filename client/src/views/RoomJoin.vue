@@ -88,7 +88,12 @@ function handleRecreate() {
 <template>
   <div class="box" v-if="roomInfo !== undefined">
     <span class="titleBox">{{ roomInfo.words.slice(0, 3).join("") }}</span>
-    <ShareBox :roomID="props.roomID" :role="roomInfo.role" />
+    <ShareBox
+      :roomID="props.roomID"
+      :role="roomInfo.role"
+      v-if="!props.offline"
+    />
+    <ShareBoxOffline :room-i-d="parseInt(props.roomID)" v-else />
     <div class="selectionBox">
       <div class="selectionBoxTitle">Join as</div>
       <div class="selectionOptionBox">
@@ -114,7 +119,6 @@ function handleRecreate() {
     <div v-if="!props.offline && roomInfo.isAdmin" @click="handleRecreate()">
       Recreate Room
     </div>
-    <v-checkbox label="hi" />
     <BoardSettings />
   </div>
 </template>

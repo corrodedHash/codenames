@@ -28,24 +28,27 @@ watch(dialog, (d) => {
 const allowedRoles = computed(() => leqRoomRoles(props.role));
 </script>
 <template>
-  <v-btn color="primary">
-    <i-mdi-share-variant-outline class="hoverEvent" @click="dialog = true" />
-    <v-dialog v-model="dialog" activator="parent" width="auto">
-      <v-card>
-        <v-card-text v-if="shareURL !== undefined">
-          {{ shareURL }}
-        </v-card-text>
-        <v-card-text v-else>
-          <v-list lines="one" v-if="shareURL === undefined">
-            <v-list-item
-              v-for="item in allowedRoles"
-              :key="item"
-              :title="item"
-              @click="handleShare(item)"
-            ></v-list-item>
-          </v-list>
-        </v-card-text>
-      </v-card>
-    </v-dialog>
-  </v-btn>
+  <v-dialog v-model="dialog" width="auto">
+    <template v-slot:activator="{ props }">
+      <v-btn color="primary" :icon="true" size="small" v-bind="props">
+        <i-mdi-share-variant-outline class="hoverEvent" />
+      </v-btn>
+    </template>
+
+    <v-card>
+      <v-card-text v-if="shareURL !== undefined">
+        {{ shareURL }}
+      </v-card-text>
+      <v-card-text v-else>
+        <v-list lines="one" v-if="shareURL === undefined">
+          <v-list-item
+            v-for="item in allowedRoles"
+            :key="item"
+            :title="item"
+            @click="handleShare(item)"
+          ></v-list-item>
+        </v-list>
+      </v-card-text>
+    </v-card>
+  </v-dialog>
 </template>

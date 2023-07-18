@@ -20,24 +20,28 @@ function handleOfflineShare(mode: "complete" | "reduced") {
 const shareURL = ref(undefined as undefined | string);
 
 watch(dialog, (d) => {
+  console.log("hi");
   if (!d) {
     shareURL.value = undefined;
   }
 });
 </script>
 <template>
-  <v-btn color="primary">
-    <i-mdi-share-variant-outline class="hoverEvent" @click="dialog = true" />
-    <v-dialog v-model="dialog" activator="parent" width="auto">
-      <v-card>
-        <v-card-text v-if="shareURL !== undefined">
-          {{ shareURL }}
-        </v-card-text>
-        <v-card-text v-else>
-          <v-btn @click="handleOfflineShare('reduced')">Reduced</v-btn>
-          <v-btn @click="handleOfflineShare('complete')">Complete</v-btn>
-        </v-card-text>
-      </v-card>
-    </v-dialog>
-  </v-btn>
+  <v-dialog v-model="dialog" width="auto">
+    <template v-slot:activator="{ props }">
+      <v-btn color="primary" :icon="true" size="small" v-bind="props">
+        <i-mdi-share-variant-outline class="hoverEvent" />
+      </v-btn>
+    </template>
+
+    <v-card>
+      <v-card-text v-if="shareURL !== undefined">
+        {{ shareURL }}
+      </v-card-text>
+      <v-card-text v-else>
+        <v-btn @click="handleOfflineShare('reduced')">Reduced</v-btn>
+        <v-btn @click="handleOfflineShare('complete')">Complete</v-btn>
+      </v-card-text>
+    </v-card>
+  </v-dialog>
 </template>

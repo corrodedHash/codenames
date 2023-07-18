@@ -11,7 +11,7 @@ declare module 'vue' {
     GameBoard: typeof import('./src/components/GameBoard.vue')['default']
     IMdiDeleteOutline: typeof import('~icons/mdi/delete-outline')['default']
     IMdiDiceMultiple: typeof import('~icons/mdi/dice-multiple')['default']
-    IMdiPlusBox: typeof import('~icons/mdi/plus-box')['default']
+    IMdiPlus: typeof import('~icons/mdi/plus')['default']
     IMdiShareVariantOutline: typeof import('~icons/mdi/share-variant-outline')['default']
     OfflineRoomList: typeof import('./src/components/OfflineRoomList.vue')['default']
     OnlineRoomList: typeof import('./src/components/OnlineRoomList.vue')['default']
