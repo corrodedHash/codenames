@@ -114,6 +114,7 @@ function handleRecreate() {
     <div v-if="!props.offline && roomInfo.isAdmin" @click="handleRecreate()">
       Recreate Room
     </div>
+    <v-checkbox label="hi" />
     <BoardSettings />
   </div>
 </template>

@@ -4,13 +4,19 @@ const optionStore = useOptionStore();
 </script>
 <template>
   <div>
-    <div>
-      <input type="checkbox" v-model="optionStore.showVertical" />
-      <span> Vertical </span>
-    </div>
-    <div>
-      <input type="checkbox" v-model="optionStore.showMirrored" />
-      <span> Horizontal </span>
-    </div>
+    <v-switch
+      inset
+      color="secondary"
+      hide-details
+      v-model="optionStore.showVertical"
+      label="Vertical"
+    />
+    <v-switch
+      inset
+      color="secondary"
+      hide-details
+      v-model="optionStore.showMirrored"
+      label="Horizontal"
+    />
   </div>
 </template>
