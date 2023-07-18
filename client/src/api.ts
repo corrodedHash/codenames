@@ -49,21 +49,6 @@ export async function clickCell(roomID: string, cellID: number, token: string) {
   });
 }
 
-interface RoomUpdateResponse {
-  clickState: number;
-  roomState: number;
-}
-export async function heartBeat(
-  roomID: string,
-  token: string
-): Promise<RoomUpdateResponse> {
-  const response = await fetch(API_ENDPOINT + `roomUpdates/${roomID}`, {
-    method: "GET",
-    headers: { Authorization: token },
-  });
-  return await response.json();
-}
-
 export async function getRoomRole(
   roomID: string,
   token: string
