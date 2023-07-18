@@ -20,21 +20,30 @@ function handleDelete(roomID: string) {
 }
 </script>
 <template>
-  <div
-    v-for="[sessionkey, room] in Object.entries(roomStore.rooms)"
-    :key="sessionkey"
-  >
-    <span @click="handleJoin(sessionkey)">
-      {{ room.shortname ?? sessionkey }}
-    </span>
-    <span class="optionBox">
-      <i-mdi-delete-outline
-        class="hoverEvent"
-        @click="handleDelete(sessionkey)"
-      />
+  <v-list lines="two">
+    <v-list-subheader> Online Rooms</v-list-subheader>
+    <v-list-item
+      v-for="[sessionkey, room] in Object.entries(roomStore.rooms)"
+      :key="sessionkey"
+      :title="room.shortname"
+      :subtitle="room.role"
+      @click="handleJoin(sessionkey)"
+    >
+      <template v-slot:prepend>
+        <!-- <v-avatar color="grey-lighten-1">
+          <v-icon color="white">mdi-folder</v-icon>
+        </v-avatar> -->
+      </template>
 
-      <share-box :room-i-d="sessionkey" :role="room.role || 'spectator'" />
-    </span>
-  </div>
+      <template v-slot:append>
+        <div class="pl-2">
+          <v-btn @click="handleDelete(sessionkey)">
+            <i-mdi-delete-outline class="hoverEvent" />
+          </v-btn>
+          <share-box :room-i-d="sessionkey" :role="room.role || 'spectator'" />
+        </div>
+      </template>
+    </v-list-item>
+  </v-list>
 </template>
 <style scoped></style>
