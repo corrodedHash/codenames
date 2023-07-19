@@ -93,7 +93,7 @@ function handleRecreate() {
       :role="roomInfo.role"
       v-if="!props.offline"
     />
-    <ShareBoxOffline :room-i-d="parseInt(props.roomID)" v-else />
+    <ShareBoxOffline :roomID="parseInt(props.roomID)" v-else />
     <div class="selectionBox">
       <div class="selectionBoxTitle">Join as</div>
       <div class="selectionOptionBox">
