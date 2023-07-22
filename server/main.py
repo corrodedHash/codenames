@@ -7,9 +7,17 @@ import typing
 from typing import Annotated, Any
 from uuid import UUID, uuid4
 
-from fastapi import (BackgroundTasks, Depends, FastAPI, Header, HTTPException,
-                     WebSocket, WebSocketDisconnect, WebSocketException,
-                     status)
+from fastapi import (
+    BackgroundTasks,
+    Depends,
+    FastAPI,
+    Header,
+    HTTPException,
+    WebSocket,
+    WebSocketDisconnect,
+    WebSocketException,
+    status,
+)
 from pydantic import BaseModel, ConfigDict, Field, validator
 
 
@@ -39,6 +47,7 @@ class RoomRole(str, enum.Enum):
 class Participant(BaseModel):
     """Participant in a room"""
 
+    token: str
     role: RoomRole
     sockets: list[WebSocket] = Field(default_factory=list)
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -50,7 +59,7 @@ class Room(BaseModel):
     words: list[str]
     colors: list[CellColor]
     revealed: list[bool] = Field(default_factory=lambda: [False] * 25)
-    participants: dict[str, Participant] = Field(default_factory=dict)
+    participants: list[Participant] = Field(default_factory=list)
     creation: datetime.datetime = Field(default_factory=datetime.datetime.now)
 
 
@@ -105,7 +114,7 @@ def create_room(params: RoomCreationParams) -> RoomCreationResponse:
     ROOMS[room_id] = Room(
         words=params.words,
         colors=params.colors,
-        participants={admintoken: Participant(role=RoomRole.ADMIN)},
+        participants=[Participant(token=admintoken, role=RoomRole.ADMIN)],
     )
     return RoomCreationResponse(id=room_id, token=admintoken)
 
@@ -117,11 +126,16 @@ class RoomCredentials:
         room = ROOMS[room_id]
         token = authorization.replace("Bearer ", "")
         access_forbidden_exception = HTTPException(status_code=401)
-        if token not in room.participants:
+        found_participant = [x for x in room.participants if x.token == token]
+        if not found_participant:
             raise access_forbidden_exception
-        self.token = token
+        self.user = found_participant[0]
         self.room_id = room_id
-        self.role = room.participants[token].role
+
+    @property
+    def role(self) -> RoomRole:
+        """Return role of user"""
+        return self.user.role
 
     @property
     def is_admin(self) -> bool:
@@ -190,7 +204,7 @@ def get_room(
 
 async def notify_participants(room_id: UUID) -> None:
     """Notify participants of updates"""
-    todo = (s for y in ROOMS[room_id].participants.values() for s in y.sockets)
+    todo = (s for y in ROOMS[room_id].participants for s in y.sockets)
     sendings = [t.send_bytes(b"G") for t in todo]
     await asyncio.gather(*sendings)
 
@@ -226,7 +240,7 @@ def make_share(
     if creds.role < role:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
     new_token = uuid4().hex
-    ROOMS[room_id].participants[new_token] = Participant(role=role)
+    ROOMS[room_id].participants.append(Participant(role=role, token=new_token))
     return new_token
 
 
@@ -236,13 +250,14 @@ async def subscribe_room(websocket: WebSocket, room_id: UUID) -> None:
     await websocket.accept()
     room = ROOMS[room_id]
     token = await websocket.receive_text()
-    if token not in room.participants:
+    user = [x for x in room.participants if x.token == token]
+    if not user:
         raise WebSocketException(
             code=status.WS_1008_POLICY_VIOLATION, reason="Unauthorized"
         )
-    ROOMS[room_id].participants[token].sockets.append(websocket)
+    user[0].sockets.append(websocket)
     try:
         while True:
             await websocket.receive_bytes()
     except WebSocketDisconnect:
-        ROOMS[room_id].participants[token].sockets.remove(websocket)
+        user[0].sockets.remove(websocket)
