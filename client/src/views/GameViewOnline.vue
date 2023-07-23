@@ -6,6 +6,7 @@ import { CardStateString } from "../util/util";
 import { ref, watch } from "vue";
 import { clickCell, getRoomInfo, subscribe } from "../api";
 import { onUnmounted } from "vue";
+import { computed } from "vue";
 
 const props = defineProps<{
   roomID: string;
@@ -36,13 +37,39 @@ function updateOnlineRoom() {
   );
 }
 
+function handleTick(event: MessageEvent) {
+  const message = JSON.parse(event.data);
+  switch (message["event"]) {
+    case "click":
+      const clicked_word =
+        gameinfo.value?.words[message["cell"]] || message["cell"];
+      appendSnackbar(`${message["displayname"]} clicked "${clicked_word}"`);
+      updateOnlineRoom();
+
+      break;
+    case "roomchange":
+      appendSnackbar(`${message["displayname"]} recreated room`);
+      updateOnlineRoom();
+      break;
+    case "useronline":
+      appendSnackbar(`${message["displayname"]} came online`);
+      break;
+    case "useroffline":
+      appendSnackbar(`${message["displayname"]} went offline`);
+      break;
+    default:
+      console.warn("Unknown message: ", event.data);
+      break;
+  }
+}
+
 watch(
   () => ({ role: props.role, roomID: props.roomID }),
   async ({ roomID }) => {
     updateOnlineRoom();
     w?.close();
     w = await subscribe(roomID, roomStore.rooms[roomID].sessiontoken);
-    w.onmessage = updateOnlineRoom;
+    w.onmessage = handleTick;
   },
   { immediate: true }
 );
@@ -66,9 +93,44 @@ function handleCellClick(index: number) {
       break;
   }
 }
+const snackbar = computed({
+  get: () => snackbar_text.value !== undefined,
+  set(v) {
+    if (!v) snackbar_text.value = undefined;
+  },
+});
+const snackbar_text = ref(undefined as undefined | string);
+let snackbar_disappear = undefined as undefined | NodeJS.Timeout;
+function appendSnackbar(text: string) {
+  if (snackbar_text.value === undefined) {
+    snackbar_text.value = text;
+  } else {
+    snackbar_text.value += "\n" + text;
+  }
+  console.log(snackbar_text.value);
+}
+
+watch(snackbar_text, (v) => {
+  clearTimeout(snackbar_disappear);
+
+  if (v === undefined) return;
+  snackbar_disappear = setTimeout(
+    () => (snackbar_text.value = undefined),
+    4000
+  );
+});
 </script>
 <template>
   <div class="game-box">
+    <v-snackbar v-model="snackbar" class="nobreak">
+      {{ snackbar_text }}
+
+      <template v-slot:actions>
+        <v-btn color="pink" variant="text" @click="snackbar = false">
+          Close
+        </v-btn>
+      </template>
+    </v-snackbar>
     <GameBoard
       v-if="gameinfo !== undefined"
       :words="gameinfo.words"
@@ -81,6 +143,9 @@ function handleCellClick(index: number) {
 </template>
 
 <style scoped>
+.nobreak {
+  white-space: pre;
+}
 .settings-modal {
   position: absolute;
   top: 50%;

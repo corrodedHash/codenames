@@ -3,10 +3,12 @@ import asyncio
 import datetime
 import enum
 import functools
+import json
+import random
 import typing
-from typing import Annotated, Any
+from typing import Annotated, Any, Callable, Self, TypeVar
 from uuid import UUID, uuid4
-
+import dataclasses
 from fastapi import (
     BackgroundTasks,
     Depends,
@@ -18,7 +20,9 @@ from fastapi import (
     WebSocketException,
     status,
 )
-from pydantic import BaseModel, ConfigDict, Field, validator
+from pydantic import BaseModel, ConfigDict, validator
+
+RANDOM_NAME_POOL = "ut_names.txt"
 
 
 class CellColor(str, enum.Enum):
@@ -44,23 +48,94 @@ class RoomRole(str, enum.Enum):
         return value_map[self] > value_map[other]
 
 
-class Participant(BaseModel):
+@functools.cache
+def get_random_name_pool() -> list[str]:
+    """Loads pool of random names, cached"""
+    with open("ut_names.txt", "r", encoding="utf-8") as pool_file:
+        return [x.strip() for x in pool_file.readlines()]
+
+
+def get_random_name() -> str:
+    """Chooses a random name"""
+    return random.choice(get_random_name_pool())
+
+
+def shuffle_random_pool() -> list[str]:
+    """Shuffle random pool so that it is different for every room"""
+    new_pool = get_random_name_pool()
+    random.shuffle(new_pool)
+    return new_pool
+
+
+@dataclasses.dataclass
+class Participant:
     """Participant in a room"""
 
-    token: str
     role: RoomRole
-    sockets: list[WebSocket] = Field(default_factory=list)
+    displayname: str
+    token: str = dataclasses.field(default_factory=lambda: uuid4().hex)
+    identifier: str = dataclasses.field(default_factory=lambda: uuid4().hex)
+    sockets: list[WebSocket] = dataclasses.field(default_factory=list)
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
 
-class Room(BaseModel):
+@dataclasses.dataclass
+class Room:
     """Room information"""
 
     words: list[str]
     colors: list[CellColor]
-    revealed: list[bool] = Field(default_factory=lambda: [False] * 25)
-    participants: list[Participant] = Field(default_factory=list)
-    creation: datetime.datetime = Field(default_factory=datetime.datetime.now)
+    revealed: list[bool] = dataclasses.field(default_factory=lambda: [False] * 25)
+    participants: list[Participant] = dataclasses.field(default_factory=list)
+    displayname_pool: list[str] = dataclasses.field(default_factory=shuffle_random_pool)
+    creation: datetime.datetime = dataclasses.field(
+        default_factory=datetime.datetime.now
+    )
+
+    async def broadcast(self, message: str):
+        """Notify participants of updates"""
+        todo = (s for y in self.participants for s in y.sockets)
+        sendings = [t.send_text(message) for t in todo]
+        await asyncio.gather(*sendings)
+
+    async def broadcast_event(
+        self,
+        eventname: str,
+        info: dict[str, Any],
+        actor: str | None,
+    ):
+        """Notify participants of event"""
+        actor_instance = [x for x in self.participants if x.identifier == actor]
+        actordict = (
+            {
+                "user": actor,
+                "displayname": actor_instance[0].displayname
+                if actor_instance[0]
+                else None,
+            }
+            if actor
+            else {}
+        )
+        await self.broadcast(json.dumps({"event": eventname} | actordict | info))
+
+
+class UserSummary(BaseModel):
+    """Non-sensitive user information"""
+
+    user_id: str
+    displayname: str
+    online: bool
+    role: RoomRole
+
+    @classmethod
+    def summarize(cls, participant: Participant) -> Self:
+        """Create a `UserSummary` from `Participant` type"""
+        return UserSummary(
+            user_id=participant.identifier,
+            displayname=participant.displayname,
+            online=len(participant.sockets) > 0,
+            role=participant.role,
+        )
 
 
 class RoomCreationParams(BaseModel):
@@ -114,8 +189,15 @@ def create_room(params: RoomCreationParams) -> RoomCreationResponse:
     ROOMS[room_id] = Room(
         words=params.words,
         colors=params.colors,
-        participants=[Participant(token=admintoken, role=RoomRole.ADMIN)],
+        participants=[
+            Participant(
+                token=admintoken,
+                role=RoomRole.ADMIN,
+                displayname="Adam",
+            )
+        ],
     )
+    ROOMS[room_id].participants[0].displayname = ROOMS[room_id].displayname_pool.pop()
     return RoomCreationResponse(id=room_id, token=admintoken)
 
 
@@ -157,7 +239,12 @@ def change_room(
     room.words = params.words
     room.colors = params.colors
     room.revealed = [False] * 25
-    background_tasks.add_task(notify_participants, room_id)
+    background_tasks.add_task(
+        room.broadcast_event,
+        eventname="roomchange",
+        info={},
+        actor=creds.user.identifier,
+    )
 
 
 @app.delete("/room/{room_id}")
@@ -202,13 +289,6 @@ def get_room(
     )
 
 
-async def notify_participants(room_id: UUID) -> None:
-    """Notify participants of updates"""
-    todo = (s for y in ROOMS[room_id].participants for s in y.sockets)
-    sendings = [t.send_bytes(b"G") for t in todo]
-    await asyncio.gather(*sendings)
-
-
 @app.put("/room/{room_id}/{cell}")
 def click_room(
     room_id: UUID,
@@ -223,13 +303,38 @@ def click_room(
         raise HTTPException(status_code=401)
     if not room.revealed[cell]:
         room.revealed[cell] = True
-        background_tasks.add_task(notify_participants, room_id)
+        background_tasks.add_task(
+            room.broadcast_event,
+            eventname="click",
+            info={"cell": cell},
+            actor=creds.user.identifier,
+        )
 
 
 @app.get("/role/{room_id}")
 def get_role(creds: Annotated[RoomCredentials, Depends()]) -> RoomRole:
     """Get role of user"""
     return creds.role
+
+
+@app.get("/user/{room_id}")
+def get_users(creds: Annotated[RoomCredentials, Depends()]) -> list[UserSummary]:
+    """List all users in room"""
+    return [UserSummary.summarize(p) for p in ROOMS[creds.room_id].participants]
+
+
+T = TypeVar("T")
+
+
+def try_n_times(
+    func: Callable[[], T], cond: Callable[[T], bool], n_times: int
+) -> T | None:
+    """Try to call a function n times, return None if cond returns false every time"""
+    for _ in range(n_times):
+        result = func()
+        if cond(result):
+            return result
+    return None
 
 
 @app.post("/roomShare/{room_id}/{role}")
@@ -239,8 +344,27 @@ def make_share(
     """Create share code"""
     if creds.role < role:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
-    new_token = uuid4().hex
-    ROOMS[room_id].participants.append(Participant(role=role, token=new_token))
+    new_token = try_n_times(
+        lambda: uuid4().hex,
+        lambda x: len([p for p in ROOMS[room_id].participants if p.token == x]) == 0,
+        5,
+    )
+    new_identifier = try_n_times(
+        lambda: uuid4().hex,
+        lambda x: len([p for p in ROOMS[room_id].participants if p.identifier == x])
+        == 0,
+        5,
+    )
+    if new_token is None or new_identifier is None:
+        raise RuntimeError("Could not generate token")
+    ROOMS[room_id].participants.append(
+        Participant(
+            role=role,
+            token=new_token,
+            identifier=new_identifier,
+            displayname=ROOMS[room_id].displayname_pool.pop(),
+        )
+    )
     return new_token
 
 
@@ -255,9 +379,17 @@ async def subscribe_room(websocket: WebSocket, room_id: UUID) -> None:
         raise WebSocketException(
             code=status.WS_1008_POLICY_VIOLATION, reason="Unauthorized"
         )
+    if len(user[0].sockets) == 0:
+        await room.broadcast_event(
+            eventname="useronline", info={}, actor=user[0].identifier
+        )
     user[0].sockets.append(websocket)
     try:
         while True:
             await websocket.receive_bytes()
     except WebSocketDisconnect:
         user[0].sockets.remove(websocket)
+        if len(user[0].sockets) == 0:
+            await room.broadcast_event(
+                eventname="useroffline", info={}, actor=user[0].identifier
+            )

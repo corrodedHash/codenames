@@ -14,7 +14,8 @@ export async function getRoomInfo(
   const response = await fetch(API_ENDPOINT + `room/${roomID}`, {
     headers: { Authorization: token },
   });
-  if (!response.ok) throw new Error("Response status not okay");
+  if (!response.ok)
+    throw new Error(`Response status not okay\n${await response.text()}`);
   return await response.json();
 }
 
