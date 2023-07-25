@@ -5,6 +5,9 @@ import { useRoomStore } from "../store";
 import { watch } from "vue";
 import { generateOnlineShareURL } from "../url";
 
+import * as qrcode from "qrcode";
+import CopyTextBox from "./CopyTextBox.vue";
+
 const props = defineProps<{ role: RoomRole; roomID: string }>();
 
 const dialog = ref(false);
@@ -26,6 +29,35 @@ watch(dialog, (d) => {
 });
 
 const allowedRoles = computed(() => leqRoomRoles(props.role));
+
+const qrcodecanvas = ref(undefined as undefined | HTMLCanvasElement);
+
+const canShare = computed(() => {
+  return !!navigator.share;
+});
+
+function maybeShare() {
+  if (canShare.value) {
+    navigator.share({
+      title: "Invitation to Codenames room",
+      url: shareURL.value,
+    });
+  } else {
+    console.warn("Device cannot share");
+  }
+}
+
+watch(
+  [shareURL, qrcodecanvas],
+  ([url, canvas]) => {
+    console.log("heya");
+    if (url === undefined) return;
+    console.log("heyaya");
+    if (canvas === undefined) return;
+    qrcode.toCanvas(canvas, url, {});
+  },
+  { immediate: true }
+);
 </script>
 <template>
   <v-dialog v-model="dialog" width="auto">
@@ -37,7 +69,8 @@ const allowedRoles = computed(() => leqRoomRoles(props.role));
 
     <v-card>
       <v-card-text v-if="shareURL !== undefined">
-        {{ shareURL }}
+        <canvas ref="qrcodecanvas" @click="maybeShare"></canvas>
+        <copy-text-box :text="shareURL" />
       </v-card-text>
       <v-card-text v-else>
         <v-list lines="one" v-if="shareURL === undefined">

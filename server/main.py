@@ -205,7 +205,12 @@ class RoomCredentials:
     """Authorize user from HTTP Request"""
 
     def __init__(self, room_id: UUID, authorization: Annotated[str, Header()]):
-        room = ROOMS[room_id]
+        try:
+            room = ROOMS[room_id]
+        except KeyError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Room does not exist"
+            ) from exc
         token = authorization.replace("Bearer ", "")
         access_forbidden_exception = HTTPException(status_code=401)
         found_participant = [x for x in room.participants if x.token == token]
@@ -213,6 +218,7 @@ class RoomCredentials:
             raise access_forbidden_exception
         self.user = found_participant[0]
         self.room_id = room_id
+        self.room = room
 
     @property
     def role(self) -> RoomRole:
@@ -227,7 +233,6 @@ class RoomCredentials:
 
 @app.patch("/room/{room_id}")
 def change_room(
-    room_id: UUID,
     params: RoomCreationParams,
     creds: Annotated[RoomCredentials, Depends()],
     background_tasks: BackgroundTasks,
@@ -235,12 +240,11 @@ def change_room(
     """Change room information"""
     if not creds.is_admin:
         raise HTTPException(status_code=401)
-    room = ROOMS[room_id]
-    room.words = params.words
-    room.colors = params.colors
-    room.revealed = [False] * 25
+    creds.room.words = params.words
+    creds.room.colors = params.colors
+    creds.room.revealed = [False] * 25
     background_tasks.add_task(
-        room.broadcast_event,
+        creds.room.broadcast_event,
         eventname="roomchange",
         info={},
         actor=creds.user.identifier,
@@ -268,11 +272,10 @@ class RoomInfo(BaseModel):
 
 @app.get("/room/{room_id}")
 def get_room(
-    room_id: UUID,
     creds: Annotated[RoomCredentials, Depends()],
 ) -> RoomInfo:
     """Get room information"""
-    room = ROOMS[room_id]
+    room = creds.room
     if creds.role in [RoomRole.ADMIN, RoomRole.SPYMASTER]:
         return RoomInfo(
             words=room.words,
@@ -291,16 +294,15 @@ def get_room(
 
 @app.put("/room/{room_id}/{cell}")
 def click_room(
-    room_id: UUID,
     cell: int,
     creds: Annotated[RoomCredentials, Depends()],
     background_tasks: BackgroundTasks,
 ) -> None:
     """Send click to room"""
-    room = ROOMS[room_id]
+    room = creds.room
 
     if creds.role == RoomRole.SPECTATOR:
-        raise HTTPException(status_code=401)
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
     if not room.revealed[cell]:
         room.revealed[cell] = True
         background_tasks.add_task(
@@ -320,7 +322,7 @@ def get_role(creds: Annotated[RoomCredentials, Depends()]) -> RoomRole:
 @app.get("/user/{room_id}")
 def get_users(creds: Annotated[RoomCredentials, Depends()]) -> list[UserSummary]:
     """List all users in room"""
-    return [UserSummary.summarize(p) for p in ROOMS[creds.room_id].participants]
+    return [UserSummary.summarize(p) for p in creds.room.participants]
 
 
 T = TypeVar("T")
@@ -338,31 +340,32 @@ def try_n_times(
 
 
 @app.post("/roomShare/{room_id}/{role}")
-def make_share(
-    room_id: UUID, creds: Annotated[RoomCredentials, Depends()], role: RoomRole
-) -> str:
+def make_share(creds: Annotated[RoomCredentials, Depends()], role: RoomRole) -> str:
     """Create share code"""
     if creds.role < role:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
     new_token = try_n_times(
         lambda: uuid4().hex,
-        lambda x: len([p for p in ROOMS[room_id].participants if p.token == x]) == 0,
+        lambda x: len([p for p in creds.room.participants if p.token == x]) == 0,
         5,
     )
     new_identifier = try_n_times(
         lambda: uuid4().hex,
-        lambda x: len([p for p in ROOMS[room_id].participants if p.identifier == x])
-        == 0,
+        lambda x: len([p for p in creds.room.participants if p.identifier == x]) == 0,
         5,
     )
     if new_token is None or new_identifier is None:
-        raise RuntimeError("Could not generate token")
-    ROOMS[room_id].participants.append(
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Could not generate token",
+            headers={"Retry-After": "0"},
+        )
+    creds.room.participants.append(
         Participant(
             role=role,
             token=new_token,
             identifier=new_identifier,
-            displayname=ROOMS[room_id].displayname_pool.pop(),
+            displayname=creds.room.displayname_pool.pop(),
         )
     )
     return new_token
