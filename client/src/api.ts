@@ -63,7 +63,7 @@ export async function getRoomRole(
 
 export interface UserSummary {
   displayname: string;
-  identifier: string;
+  user_id: string;
   role: RoomRole;
 }
 
@@ -76,6 +76,17 @@ export async function getUsers(
     headers: { Authorization: token },
   });
   return await response.json();
+}
+
+export async function deleteUser(
+  roomID: string,
+  userID: string,
+  token: string
+): Promise<undefined> {
+  const response = await fetch(API_ENDPOINT + `user/${roomID}/${userID}`, {
+    method: "DELETE",
+    headers: { Authorization: token },
+  });
 }
 
 export async function makeShare(

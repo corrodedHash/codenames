@@ -1,5 +1,7 @@
 <script setup lang="ts">
-const props = defineProps<{ options: string[] }>();
+const props = defineProps<{
+  options: string[] | { title: string; value: string }[];
+}>();
 
 const emits = defineEmits<{
   (e: "selected", option: string): undefined;
@@ -10,10 +12,10 @@ const emits = defineEmits<{
     <div
       class="selectionBoxOption"
       v-for="x in props.options"
-      :key="x"
-      @click="emits('selected', x)"
+      :key="typeof x === 'string' ? x : x.value"
+      @click="emits('selected', typeof x === 'string' ? x : x.value)"
     >
-      {{ x }}
+      {{ typeof x === "string" ? x : x.title }}
     </div>
   </div>
 </template>

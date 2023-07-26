@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useRouter } from "vue-router";
 import { GameRole, useOfflineRoomStore, useRoomStore } from "../store";
-import { watchEffect, ref } from "vue";
+import { watchEffect, ref, computed } from "vue";
 import { getRoomInfo, getRoomRole } from "../api";
 import { RoomRole } from "../util/roomInfo";
 import { CardStateString } from "../util/util";
@@ -84,6 +84,21 @@ function handleRecreate() {
     query: { s: roomInfo.value.roomID },
   });
 }
+
+const select_options = computed(() => {
+  if (roomInfo.value === undefined) throw Error();
+  const leader = roomInfo.value.readAccess
+    ? [{ value: "leader", title: "Spymaster" }]
+    : [];
+  const revealer = roomInfo.value.writeAccess
+    ? [{ value: "revealer", title: "Revealer" }]
+    : [];
+  const spectator = { value: "spectator", title: "Revealer" };
+  return [...leader, ...revealer, spectator] as {
+    title: string;
+    value: GameRole;
+  }[];
+});
 </script>
 
 <template>
@@ -98,12 +113,9 @@ function handleRecreate() {
     <div class="selectionBox">
       <div class="selectionBoxTitle">Join as</div>
       <SillySelect
-        :options="
-          (roomInfo.readAccess ? ['leader'] : [])
-            .concat(roomInfo.writeAccess ? ['revealer'] : [])
-            .concat(['spectator']) as GameRole[]
-        "
-        @selected="(x) => handleJoin(x as GameRole)"
+        :options="select_options"
+        @selected="(x) => handleJoin(x as
+      GameRole)"
       />
     </div>
     <user-list :roomID="roomID" />
@@ -114,21 +126,6 @@ function handleRecreate() {
   </div>
 </template>
 <style scoped>
-.selectionOptionBox {
-  display: flex;
-  flex-direction: row;
-}
-.selectionBoxOption {
-  border: 1px solid black;
-  margin: 0.2em;
-  padding: 0.2em;
-  transition: font-size ease 0.5s;
-}
-.selectionBoxOption:hover {
-  /* transform: scale(1.5); */
-  font-size: 200%;
-  background-color: white;
-}
 .selectionBoxTitle {
   text-align: center;
   font-weight: bold;
