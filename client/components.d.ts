@@ -8,6 +8,7 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     BoardSettings: typeof import('./src/components/BoardSettings.vue')['default']
+    CopyTextBox: typeof import('./src/components/CopyTextBox.vue')['default']
     GameBoard: typeof import('./src/components/GameBoard.vue')['default']
     IMdiDeleteOutline: typeof import('~icons/mdi/delete-outline')['default']
     IMdiDiceMultiple: typeof import('~icons/mdi/dice-multiple')['default']

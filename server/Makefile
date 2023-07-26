@@ -1,2 +1,2 @@
 dev:
-	pipenv run uvicorn main:app --reload
+	pipenv run uvicorn codenames:app --reload
