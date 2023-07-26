@@ -61,6 +61,23 @@ export async function getRoomRole(
   return await response.json();
 }
 
+export interface UserSummary {
+  displayname: string;
+  identifier: string;
+  role: RoomRole;
+}
+
+export async function getUsers(
+  roomID: string,
+  token: string
+): Promise<UserSummary[]> {
+  const response = await fetch(API_ENDPOINT + `user/${roomID}`, {
+    method: "GET",
+    headers: { Authorization: token },
+  });
+  return await response.json();
+}
+
 export async function makeShare(
   roomID: string,
   token: string,

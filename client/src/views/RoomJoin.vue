@@ -116,9 +116,10 @@ function handleRecreate() {
         </div>
       </div>
     </div>
-    <div v-if="!props.offline && roomInfo.isAdmin" @click="handleRecreate()">
+    <user-list :roomID="roomID" />
+    <v-btn v-if="!props.offline && roomInfo.isAdmin" @click="handleRecreate()">
       Recreate Room
-    </div>
+    </v-btn>
     <BoardSettings />
   </div>
 </template>
