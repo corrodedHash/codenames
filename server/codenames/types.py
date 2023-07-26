@@ -62,7 +62,7 @@ class Room:
         default_factory=datetime.datetime.now
     )
 
-    async def broadcast(self, message: str):
+    async def broadcast(self, message: str) -> None:
         """Notify participants of updates"""
         todo = (s for y in self.participants for s in y.sockets)
         sendings = [t.send_text(message) for t in todo]
@@ -73,7 +73,7 @@ class Room:
         eventname: str,
         info: dict[str, Any],
         actor: str | None,
-    ):
+    ) -> None:
         """Notify participants of event"""
         actor_instance = [x for x in self.participants if x.identifier == actor]
         actordict = (

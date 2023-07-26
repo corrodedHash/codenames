@@ -5,6 +5,7 @@ import { watchEffect, ref } from "vue";
 import { getRoomInfo, getRoomRole } from "../api";
 import { RoomRole } from "../util/roomInfo";
 import { CardStateString } from "../util/util";
+import SillySelect from "../components/SillySelect.vue";
 
 const router = useRouter();
 const apiStore = useOfflineRoomStore();
@@ -96,25 +97,14 @@ function handleRecreate() {
     <ShareBoxOffline :roomID="parseInt(props.roomID)" v-else />
     <div class="selectionBox">
       <div class="selectionBoxTitle">Join as</div>
-      <div class="selectionOptionBox">
-        <div
-          class="selectionBoxOption"
-          @click="handleJoin('leader')"
-          v-if="roomInfo.readAccess"
-        >
-          Spymaster
-        </div>
-        <div
-          class="selectionBoxOption"
-          @click="handleJoin('revealer')"
-          v-if="roomInfo.writeAccess"
-        >
-          Revealer
-        </div>
-        <div class="selectionBoxOption" @click="handleJoin('spectator')">
-          Spectator
-        </div>
-      </div>
+      <SillySelect
+        :options="
+          (roomInfo.readAccess ? ['leader'] : [])
+            .concat(roomInfo.writeAccess ? ['revealer'] : [])
+            .concat(['spectator']) as GameRole[]
+        "
+        @selected="(x) => handleJoin(x as GameRole)"
+      />
     </div>
     <user-list :roomID="roomID" />
     <v-btn v-if="!props.offline && roomInfo.isAdmin" @click="handleRecreate()">

@@ -1,5 +1,5 @@
 """Unsorted routes"""
-from typing import Annotated, Callable, Self, TypeVar
+from typing import Annotated, Callable, TypeVar
 from uuid import UUID, uuid4
 
 from fastapi import (
@@ -12,44 +12,12 @@ from fastapi import (
     WebSocketException,
     status,
 )
-from pydantic import BaseModel
 
 from ..creds import RoomCredentials
 from ..rooms import ROOMS
 from ..types import Participant, RoomRole
 
 router = APIRouter()
-
-
-class UserSummary(BaseModel):
-    """Non-sensitive user information"""
-
-    user_id: str
-    displayname: str
-    online: bool
-    role: RoomRole
-
-    @classmethod
-    def summarize(cls, participant: Participant) -> Self:
-        """Create a `UserSummary` from `Participant` type"""
-        return UserSummary(
-            user_id=participant.identifier,
-            displayname=participant.displayname,
-            online=len(participant.sockets) > 0,
-            role=participant.role,
-        )
-
-
-@router.get("/user/{room_id}")
-def get_users(creds: Annotated[RoomCredentials, Depends()]) -> list[UserSummary]:
-    """List all users in room"""
-    return [UserSummary.summarize(p) for p in creds.room.participants]
-
-
-@router.get("/user/{room_id}/me")
-def get_own_user(creds: Annotated[RoomCredentials, Depends()]) -> UserSummary:
-    """Return own user info"""
-    return UserSummary.summarize(creds.user)
 
 
 @router.put("/room/{room_id}/{cell}")
@@ -71,12 +39,6 @@ def click_room(
             info={"cell": cell},
             actor=creds.user.identifier,
         )
-
-
-@router.get("/role/{room_id}")
-def get_role(creds: Annotated[RoomCredentials, Depends()]) -> RoomRole:
-    """Get role of user"""
-    return creds.role
 
 
 T = TypeVar("T")

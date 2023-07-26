@@ -20,6 +20,7 @@ declare module 'vue' {
     RouterView: typeof import('vue-router')['RouterView']
     ShareBox: typeof import('./src/components/ShareBox.vue')['default']
     ShareBoxOffline: typeof import('./src/components/ShareBoxOffline.vue')['default']
+    SillySelect: typeof import('./src/components/SillySelect.vue')['default']
     UserList: typeof import('./src/components/UserList.vue')['default']
     WordCell: typeof import('./src/components/WordCell.vue')['default']
   }
