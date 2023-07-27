@@ -1,6 +1,6 @@
 """Unsorted routes"""
-from typing import Annotated, Callable, TypeVar
-from uuid import UUID, uuid4
+from typing import Annotated
+from uuid import uuid4
 
 from fastapi import (
     APIRouter,
@@ -12,6 +12,8 @@ from fastapi import (
     WebSocketException,
     status,
 )
+
+from codenames.util import try_n_times
 
 from ..creds import RoomCredentials
 from ..rooms import ROOMS
@@ -39,20 +41,6 @@ def click_room(
             info={"cell": cell},
             actor=creds.user.identifier,
         )
-
-
-T = TypeVar("T")
-
-
-def try_n_times(
-    func: Callable[[], T], cond: Callable[[T], bool], n_times: int
-) -> T | None:
-    """Try to call a function n times, return None if cond returns false every time"""
-    for _ in range(n_times):
-        result = func()
-        if cond(result):
-            return result
-    return None
 
 
 @router.post("/roomShare/{room_id}/{role}")
@@ -88,7 +76,7 @@ def make_share(creds: Annotated[RoomCredentials, Depends()], role: RoomRole) -> 
 
 
 @router.websocket("/roomSubscription/{room_id}")
-async def subscribe_room(websocket: WebSocket, room_id: UUID) -> None:
+async def subscribe_room(websocket: WebSocket, room_id: str) -> None:
     """Open websocket for room updates"""
     await websocket.accept()
     room = ROOMS[room_id]

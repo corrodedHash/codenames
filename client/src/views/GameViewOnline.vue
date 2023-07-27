@@ -107,7 +107,6 @@ function appendSnackbar(text: string) {
   } else {
     snackbar_text.value += "\n" + text;
   }
-  console.log(snackbar_text.value);
 }
 
 watch(snackbar_text, (v) => {

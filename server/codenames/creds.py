@@ -1,6 +1,5 @@
 """FastAPI dependency to manage room affiliation and authority"""
 from typing import Annotated
-from uuid import UUID
 
 from fastapi import Header, HTTPException, status
 
@@ -11,7 +10,7 @@ from .types import RoomRole
 class RoomCredentials:
     """Authorize user from HTTP Request"""
 
-    def __init__(self, room_id: UUID, authorization: Annotated[str, Header()]):
+    def __init__(self, room_id: str, authorization: Annotated[str, Header()]):
         try:
             room = ROOMS[room_id]
         except KeyError as exc:

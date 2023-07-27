@@ -1,12 +1,14 @@
 """FastAPI routes for accessing a room"""
+import base64
 import typing
 from typing import Annotated
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from pydantic import BaseModel, validator
 
 from codenames.creds import RoomCredentials
+from codenames.util import try_n_times
 
 from ..rooms import ROOMS
 from ..types import CellColor, Participant, Room, RoomRole
@@ -44,7 +46,7 @@ class RoomCreationParams(BaseModel):
 class RoomCreationResponse(BaseModel):
     """Response for room creation"""
 
-    id: UUID
+    id: str
     token: str
     identifier: str
     displayname: str
@@ -72,13 +74,12 @@ def change_room(
 
 @router.delete("/room/{room_id}")
 def delete_room(
-    room_id: UUID,
     creds: Annotated[RoomCredentials, Depends()],
 ) -> None:
     """Delete room"""
     if not creds.is_admin:
         raise HTTPException(status_code=401)
-    del ROOMS[room_id]
+    del ROOMS[creds.room_id]
 
 
 class RoomInfo(BaseModel):
@@ -116,8 +117,13 @@ def create_room(params: RoomCreationParams) -> RoomCreationResponse:
     """Create a new room"""
     if len(ROOMS) > 100:
         raise HTTPException(status_code=500, detail="Too many rooms")
-    room_id = uuid4()
-    if room_id in ROOMS:
+    room_id = try_n_times(
+        lambda: base64.b64encode(uuid4().bytes[:9], b"-_").decode("utf-8"),
+        lambda x: x not in ROOMS,
+        5,
+    )
+
+    if room_id is None:
         raise HTTPException(status_code=500, detail="Bad luck")
     admintoken = uuid4().hex
     ROOMS[room_id] = Room(
