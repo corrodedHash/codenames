@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import OfflineRoomList from "../components/OfflineRoomList.vue";
 import OnlineRoomList from "../components/OnlineRoomList.vue";
+const a = __COMMIT_HASH__;
+const b = __COMMIT_TIME__;
+const c = __COMMIT_DIRTY__;
 </script>
 <template>
   <v-app id="inspire">
@@ -22,6 +25,11 @@ import OnlineRoomList from "../components/OnlineRoomList.vue";
         </v-sheet>
       </v-container>
     </v-main>
+    <v-footer class="d-flex flex-column align-end">
+      <div class="font-weight-thin">
+        Build {{ a }} [{{ b }}] <span v-if="c">Dirty</span>
+      </div>
+    </v-footer>
   </v-app>
 </template>
 <style scoped>

@@ -50,9 +50,7 @@ function maybeShare() {
 watch(
   [shareURL, qrcodecanvas],
   ([url, canvas]) => {
-    console.log("heya");
     if (url === undefined) return;
-    console.log("heyaya");
     if (canvas === undefined) return;
     qrcode.toCanvas(canvas, url, {});
   },
