@@ -14,7 +14,6 @@ declare module 'vue' {
     IMdiDiceMultiple: typeof import('~icons/mdi/dice-multiple')['default']
     IMdiPlus: typeof import('~icons/mdi/plus')['default']
     IMdiShareVariantOutline: typeof import('~icons/mdi/share-variant-outline')['default']
-    IMdiTrashCan: typeof import('~icons/mdi/trash-can')['default']
     IMdiTrashCanOutline: typeof import('~icons/mdi/trash-can-outline')['default']
     OfflineRoomList: typeof import('./src/components/OfflineRoomList.vue')['default']
     OnlineRoomList: typeof import('./src/components/OnlineRoomList.vue')['default']

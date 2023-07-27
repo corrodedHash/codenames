@@ -82,8 +82,8 @@ export async function deleteUser(
   roomID: string,
   userID: string,
   token: string
-): Promise<undefined> {
-  const response = await fetch(API_ENDPOINT + `user/${roomID}/${userID}`, {
+) {
+  await fetch(API_ENDPOINT + `user/${roomID}/${userID}`, {
     method: "DELETE",
     headers: { Authorization: token },
   });
