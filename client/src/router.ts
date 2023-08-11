@@ -60,7 +60,10 @@ const routes: RouteRecordRaw[] = [
     path: `/join/o/:roomID`,
     name: "joinOnline",
     component: RoomJoin,
-    props: (route) => ({ roomID: handleRoomID(route), offline: false }),
+    props: (route) => {
+      console.log("navigating to join online");
+      return { roomID: handleRoomID(route), offline: false };
+    },
   },
   {
     path: `/s/x/:shareinfo`,
@@ -83,6 +86,16 @@ const routes: RouteRecordRaw[] = [
 const router = createRouter({
   history: createWebHashHistory(),
   routes,
+});
+
+router.afterEach((_to, _from, failure) => {
+  if (failure !== undefined) {
+    console.warn("Error navigating: ", failure);
+  }
+});
+
+router.onError((e, to, from) => {
+  console.error(`Error navigating from ${from} to ${to}:\n${e}`);
 });
 
 export default router;

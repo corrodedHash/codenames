@@ -96,7 +96,7 @@ const select_options = computed(() => {
   const revealer = roomInfo.value.writeAccess
     ? [{ value: "revealer", title: "Revealer" }]
     : [];
-  const spectator = { value: "spectator", title: "Revealer" };
+  const spectator = { value: "spectator", title: "Spectator" };
   return [...leader, ...revealer, spectator] as {
     title: string;
     value: GameRole;
