@@ -2,7 +2,7 @@
 import { useRouter } from "vue-router";
 import { GameRole, useOfflineRoomStore, useRoomStore } from "../store";
 import { watchEffect, ref, computed } from "vue";
-import { getRoomInfo, getRoomRole } from "../api";
+import { getRoomInfo, getUser } from "../api";
 import { RoomRole } from "../util/roomInfo";
 import { CardStateString } from "../util/util";
 import SillySelect from "../components/SillySelect.vue";
@@ -23,6 +23,7 @@ interface RoomInfo {
   isAdmin: boolean;
   roomID: string;
   role: RoomRole;
+  displayname: string;
 }
 
 async function getOnlineRoom(): Promise<RoomInfo> {
@@ -30,7 +31,7 @@ async function getOnlineRoom(): Promise<RoomInfo> {
     props.roomID,
     roomStore.rooms[props.roomID].sessiontoken
   );
-  const fetchRoomRole = getRoomRole(
+  const fetchRoomRole = getUser(
     props.roomID,
     roomStore.rooms[props.roomID].sessiontoken
   );
@@ -38,11 +39,12 @@ async function getOnlineRoom(): Promise<RoomInfo> {
   return {
     words: v.words,
     colors: v.colors,
-    readAccess: ["admin", "spymaster"].includes(r),
-    writeAccess: ["admin", "spymaster", "revealer"].includes(r),
+    readAccess: ["admin", "spymaster"].includes(r.role),
+    writeAccess: ["admin", "spymaster", "revealer"].includes(r.role),
     roomID: props.roomID,
-    isAdmin: r === "admin",
-    role: r,
+    isAdmin: r.role === "admin",
+    role: r.role,
+    displayname: r.displayname,
   };
 }
 
@@ -63,6 +65,7 @@ watchEffect(() => {
     roomID: props.roomID,
     isAdmin: true,
     role: "admin",
+    displayname: "Local",
   };
 });
 
@@ -104,12 +107,16 @@ const select_options = computed(() => {
 <template>
   <div class="box" v-if="roomInfo !== undefined">
     <span class="titleBox">{{ roomInfo.words.slice(0, 3).join("") }}</span>
+
     <ShareBox
       :roomID="props.roomID"
       :role="roomInfo.role"
       v-if="!props.offline"
     />
     <ShareBoxOffline :roomID="parseInt(props.roomID)" v-else />
+
+    <div>{{ roomInfo.displayname }}</div>
+
     <div class="selectionBox">
       <div class="selectionBoxTitle">Join as</div>
       <SillySelect

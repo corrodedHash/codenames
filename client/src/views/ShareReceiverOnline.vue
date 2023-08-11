@@ -3,7 +3,7 @@ import { useRouter } from "vue-router";
 import { watch } from "vue";
 import { useRoomStore } from "../store";
 import { ref } from "vue";
-import { getRoomInfo, getRoomRole } from "../api";
+import { getRoomInfo, getUser } from "../api";
 import { RoomRole } from "../util/roomInfo";
 const props = defineProps<{ roomID: string; usertoken: string }>();
 const roomStore = useRoomStore();
@@ -19,7 +19,7 @@ watch(
 
     const room = await getRoomInfo(roomID, usertoken);
     roomDescription.value = room.words.slice(0, 3).join("").replace(" ", "");
-    roomRole.value = await getRoomRole(roomID, usertoken);
+    roomRole.value = (await getUser(roomID, usertoken)).role;
   },
   { immediate: true }
 );

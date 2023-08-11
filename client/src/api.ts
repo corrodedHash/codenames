@@ -50,11 +50,11 @@ export async function clickCell(roomID: string, cellID: number, token: string) {
   });
 }
 
-export async function getRoomRole(
+export async function getUser(
   roomID: string,
   token: string
-): Promise<RoomRole> {
-  const response = await fetch(API_ENDPOINT + `role/${roomID}`, {
+): Promise<UserSummary> {
+  const response = await fetch(API_ENDPOINT + `user/${roomID}/me`, {
     method: "GET",
     headers: { Authorization: token },
   });

@@ -2,7 +2,7 @@ import { defineStore } from "pinia";
 
 import { ref, watch } from "vue";
 import { OfflineRoom } from "./util/offlineRoom";
-import { getRoomInfo, getRoomRole } from "./api";
+import { getRoomInfo, getUser } from "./api";
 import { notUndefined } from "./util/util";
 import { RoomRole } from "./util/roomInfo";
 
@@ -43,7 +43,7 @@ export const useRoomStore = defineStore("rooms", () => {
     const refreshPromises = Object.entries(rooms.value).map(
       async ([roomID, summary]) => {
         const roomInfoPromise = getRoomInfo(roomID, summary.sessiontoken);
-        const roomRolePromise = getRoomRole(roomID, summary.sessiontoken);
+        const roomRolePromise = getUser(roomID, summary.sessiontoken);
         try {
           const [i, r] = await Promise.all([roomInfoPromise, roomRolePromise]);
           return [
@@ -51,7 +51,7 @@ export const useRoomStore = defineStore("rooms", () => {
             {
               sessiontoken: summary.sessiontoken,
               shortname: i.words.slice(0, 3).join("").replace(" ", ""),
-              role: r,
+              role: r.role,
             },
           ] as const;
         } catch {

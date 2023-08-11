@@ -84,9 +84,3 @@ def get_users(creds: Annotated[RoomCredentials, Depends()]) -> list[UserSummary]
 def get_own_user(creds: Annotated[RoomCredentials, Depends()]) -> UserSummary:
     """Return own user info"""
     return UserSummary.summarize(creds.user)
-
-
-@router.get("/role/{room_id}")
-def get_role(creds: Annotated[RoomCredentials, Depends()]) -> RoomRole:
-    """Get role of user"""
-    return creds.role
