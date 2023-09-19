@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import GameBoard from "../components/GameBoard.vue";
-
+import GameStatus from "../components/GameStatus.vue";
 import { GameRole, useRoomStore } from "../store";
 import { CardStateString } from "../util/util";
 import { ref, watch } from "vue";
@@ -37,25 +37,32 @@ function updateOnlineRoom() {
   );
 }
 
+const participants = ref([] as string[]);
+const statusbar = ref(undefined as undefined | typeof GameStatus);
+
 function handleTick(event: MessageEvent) {
   const message = JSON.parse(event.data);
   switch (message["event"]) {
     case "click":
       const clicked_word =
         gameinfo.value?.words[message["cell"]] || message["cell"];
-      appendSnackbar(`${message["displayname"]} clicked "${clicked_word}"`);
       updateOnlineRoom();
-
+      statusbar.value?.cellRevealed(message["displayname"], clicked_word);
       break;
     case "roomchange":
-      appendSnackbar(`${message["displayname"]} recreated room`);
       updateOnlineRoom();
       break;
     case "useronline":
-      appendSnackbar(`${message["displayname"]} came online`);
+      participants.value.push(message["displayname"]);
       break;
     case "useroffline":
-      appendSnackbar(`${message["displayname"]} went offline`);
+      const participantIndex = participants.value.findIndex(
+        (v) => v === message["displayname"]
+      );
+      if (participantIndex !== -1) {
+        participants.value.splice(participantIndex, 1);
+      }
+
       break;
     default:
       console.warn("Unknown message: ", event.data);
@@ -73,13 +80,13 @@ watch(
   },
   { immediate: true }
 );
+
 onUnmounted(() => {
   w?.close();
 });
 
 function handleCellClick(index: number) {
   switch (props.role) {
-    case "leader":
     case "revealer":
       clickCell(
         props.roomID,
@@ -89,48 +96,24 @@ function handleCellClick(index: number) {
         updateOnlineRoom();
       });
       break;
+    case "leader":
     case "spectator":
       break;
   }
 }
-const snackbar = computed({
-  get: () => snackbar_text.value !== undefined,
-  set(v) {
-    if (!v) snackbar_text.value = undefined;
-  },
-});
-const snackbar_text = ref(undefined as undefined | string);
-let snackbar_disappear = undefined as undefined | NodeJS.Timeout;
-function appendSnackbar(text: string) {
-  if (snackbar_text.value === undefined) {
-    snackbar_text.value = text;
-  } else {
-    snackbar_text.value += "\n" + text;
-  }
-}
-
-watch(snackbar_text, (v) => {
-  clearTimeout(snackbar_disappear);
-
-  if (v === undefined) return;
-  snackbar_disappear = setTimeout(
-    () => (snackbar_text.value = undefined),
-    4000
-  );
-});
+const turn = computed(() => "red" as const);
 </script>
 <template>
   <div class="game-box">
-    <v-snackbar v-model="snackbar" class="nobreak">
-      {{ snackbar_text }}
+    <GameStatus
+      ref="statusbar"
+      class="gameStatus"
+      :participants="participants"
+      :turn="turn"
+    />
 
-      <template v-slot:actions>
-        <v-btn color="pink" variant="text" @click="snackbar = false">
-          Close
-        </v-btn>
-      </template>
-    </v-snackbar>
     <GameBoard
+      class="gameBoard"
       v-if="gameinfo !== undefined"
       :words="gameinfo.words"
       :colors="gameinfo.colors"
@@ -142,6 +125,12 @@ watch(snackbar_text, (v) => {
 </template>
 
 <style scoped>
+.gameStatus {
+  height: 10%;
+}
+.gameBoard {
+  height: 90%;
+}
 .nobreak {
   white-space: pre;
 }
