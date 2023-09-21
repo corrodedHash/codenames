@@ -38,6 +38,7 @@ class UserSummary(BaseModel):
 
 
 async def drop_user_sockets(sockets: list[WebSocket]) -> None:
+    """Close all websockets of user"""
     await asyncio.gather(*[x.close() for x in sockets])
 
 
@@ -47,6 +48,7 @@ def remove_user(
     user_id: str,
     background_task: BackgroundTasks,
 ) -> None:
+    """Remove user from room"""
     if not creds.is_admin:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
     drop_user = [
@@ -65,6 +67,7 @@ def remove_user(
 def change_user_role(
     creds: Annotated[RoomCredentials, Depends()], user_id: str, role: RoomRole
 ) -> None:
+    """Set role of user"""
     if not creds.is_admin:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
     drop_user = [x for x in creds.room.participants if x.identifier == user_id]
