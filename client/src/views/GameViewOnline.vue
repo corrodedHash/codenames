@@ -3,9 +3,9 @@ import GameBoard from "../components/GameBoard.vue";
 import GameStatus from "../components/GameStatus.vue";
 import { GameRole, useRoomStore } from "../store";
 import { CardStateString } from "../util/util";
-import { ref, watch } from "vue";
-import { clickCell, getRoomInfo, subscribe } from "../api";
-import { onUnmounted } from "vue";
+import { ref } from "vue";
+import { clickCell, getRoomInfo } from "../api";
+import { useSocket } from "../composable/socket";
 import { computed } from "vue";
 
 const props = defineProps<{
@@ -23,7 +23,6 @@ const gameinfo = ref(
         revealed: boolean[];
       }
 );
-let w = undefined as undefined | WebSocket;
 
 function updateOnlineRoom() {
   getRoomInfo(props.roomID, roomStore.rooms[props.roomID].sessiontoken).then(
@@ -69,21 +68,10 @@ function handleTick(event: MessageEvent) {
       break;
   }
 }
-
-watch(
-  () => ({ role: props.role, roomID: props.roomID }),
-  async ({ roomID }) => {
-    updateOnlineRoom();
-    w?.close();
-    w = await subscribe(roomID, roomStore.rooms[roomID].sessiontoken);
-    w.onmessage = handleTick;
-  },
-  { immediate: true }
+const webSocket = useSocket(
+  handleTick,
+  computed(() => props.roomID)
 );
-
-onUnmounted(() => {
-  w?.close();
-});
 
 function handleCellClick(index: number) {
   switch (props.role) {
