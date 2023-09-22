@@ -3,7 +3,7 @@ import GameBoard from "../components/GameBoard.vue";
 import GameStatus from "../components/GameStatus.vue";
 import { GameRole, useRoomStore } from "../store";
 import { CardStateString } from "../util/util";
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import { clickCell, getRoomInfo } from "../api";
 import { useSocket } from "../composable/socket";
 import { computed } from "vue";
@@ -68,10 +68,12 @@ function handleTick(event: MessageEvent) {
       break;
   }
 }
-const webSocket = useSocket(
+const { websocket } = useSocket(
   handleTick,
   computed(() => props.roomID)
 );
+
+watch(websocket, updateOnlineRoom, { immediate: true });
 
 function handleCellClick(index: number) {
   switch (props.role) {
