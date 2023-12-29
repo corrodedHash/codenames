@@ -7,10 +7,10 @@
 <script lang="ts" setup>
 import { ref } from "vue";
 
-const props = defineProps<{
-  turn: "red" | "blue";
-  participants: string[];
-}>();
+// const props = defineProps<{
+//   turn: "red" | "blue";
+//   participants: string[];
+// }>();
 
 const event = ref("");
 
