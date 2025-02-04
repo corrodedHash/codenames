@@ -5,7 +5,7 @@ from typing import Annotated
 from uuid import uuid4
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, field_validator
 
 from codenames.creds import RoomCredentials
 from codenames.util import try_n_times
@@ -22,7 +22,7 @@ class RoomCreationParams(BaseModel):
     words: list[str]
     colors: list[CellColor]
 
-    @validator("words")
+    @field_validator("words")
     # pylint: disable=no-self-argument
     def words_long_enough(cls, wordlist: list[str]) -> list[str]:
         """Check that the word list provided is correct"""
@@ -34,7 +34,7 @@ class RoomCreationParams(BaseModel):
             raise ValueError("Words in word list too long")
         return wordlist
 
-    @validator("colors")
+    @field_validator("colors")
     # pylint: disable=no-self-argument
     def colors_long_enough(cls, colorlist: list[CellColor]) -> list[CellColor]:
         """Check that the color list provided is correct"""
