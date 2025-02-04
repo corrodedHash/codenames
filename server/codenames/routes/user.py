@@ -29,7 +29,7 @@ class UserSummary(BaseModel):
     @classmethod
     def summarize(cls, participant: Participant) -> Self:
         """Create a `UserSummary` from `Participant` type"""
-        return UserSummary(
+        return cls(
             user_id=participant.identifier,
             displayname=participant.displayname,
             online=len(participant.sockets) > 0,
